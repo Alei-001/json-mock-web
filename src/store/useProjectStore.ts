@@ -59,6 +59,7 @@ function generateId(parentId: string): string {
 
 interface ProjectState {
   theme: Theme
+  hasSeenWelcome: boolean
   schema: SchemaField
   fieldConfigs: Record<string, FieldConfig>
   selectedFieldId: string | null
@@ -68,6 +69,8 @@ interface ProjectState {
   bindings: Record<string, Binding>
   toastMessage: string | null
 
+  dismissWelcome: () => void
+  resetWelcome: () => void
   toggleTheme: () => void
 
   selectField: (id: string | null) => void
@@ -92,6 +95,7 @@ export const useProjectStore = create<ProjectState>()(
   persist(
     (set) => ({
       theme: 'light',
+      hasSeenWelcome: false,
       schema: clone(demoSchema),
       fieldConfigs: clone(demoFieldConfigs),
       selectedFieldId: null,
@@ -283,6 +287,9 @@ export const useProjectStore = create<ProjectState>()(
     }, 2000)
   },
 
+  dismissWelcome: () => set({ hasSeenWelcome: true }),
+  resetWelcome: () => set({ hasSeenWelcome: false }),
+
   toggleTheme: () => {
     set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' }))
   },
@@ -291,6 +298,7 @@ export const useProjectStore = create<ProjectState>()(
   name: 'json-mock-project',
   partialize: (state) => ({
       theme: state.theme,
+      hasSeenWelcome: state.hasSeenWelcome,
       schema: state.schema,
       fieldConfigs: state.fieldConfigs,
       generationConfig: state.generationConfig,

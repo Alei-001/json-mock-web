@@ -59,8 +59,9 @@ function LangSwitcher() {
 import { useProjectStore } from '../../store/useProjectStore'
 
 function Logo() {
+  const resetWelcome = useProjectStore((s) => s.resetWelcome)
   return (
-    <a href="javascript:void(0)" className={styles.logo}>
+    <button className={styles.logo} onClick={resetWelcome} title="Home">
       <div className={styles.logoMark}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M8 3H6a2 2 0 00-2 2v3c0 1.1-.9 2-2 2v4c1.1 0 2 .9 2 2v3a2 2 0 002 2h2" />
@@ -68,7 +69,7 @@ function Logo() {
         </svg>
       </div>
       <span className={styles.logoText}>JSON Mock</span>
-    </a>
+    </button>
   )
 }
 

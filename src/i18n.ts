@@ -5,8 +5,16 @@ import en from './locales/en.json'
 import ja from './locales/ja.json'
 import ko from './locales/ko.json'
 
+function detectBrowserLang(): string {
+  const lang = navigator.language || ''
+  if (lang.startsWith('zh')) return 'zh-CN'
+  if (lang.startsWith('ja')) return 'ja'
+  if (lang.startsWith('ko')) return 'ko'
+  return 'en'
+}
+
 const saved = localStorage.getItem('json-mock-lang')
-const defaultLang = saved || 'zh-CN'
+const defaultLang = saved || detectBrowserLang()
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -16,7 +24,7 @@ i18n.use(initReactI18next).init({
     ko: { translation: ko },
   },
   lng: defaultLang,
-  fallbackLng: 'zh-CN',
+  fallbackLng: 'en',
   interpolation: { escapeValue: false },
 })
 

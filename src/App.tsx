@@ -7,6 +7,7 @@ import FieldConfigModal from './components/Modal/FieldConfigModal'
 import Modal from './components/Modal/Modal'
 import DataSourcePanel from './components/DataSourcePanel/DataSourcePanel'
 import TemplateLibrary from './components/TemplateLibrary/TemplateLibrary'
+import Welcome from './components/Welcome/Welcome'
 import Toast from './components/Toast/Toast'
 import { useProjectStore } from './store/useProjectStore'
 
@@ -19,6 +20,7 @@ function App() {
   const selectedFieldId = useProjectStore((s) => s.selectedFieldId)
   const toastMessage = useProjectStore((s) => s.toastMessage)
   const theme = useProjectStore((s) => s.theme)
+  const hasSeenWelcome = useProjectStore((s) => s.hasSeenWelcome)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -45,19 +47,25 @@ function App() {
 
   return (
     <>
-      <TopBar onTemplate={handleOpenTmpl} onDataSource={handleOpenDs} />
-      <div className="main">
-        <SchemaEditor onEditField={handleEditField} />
-        <DataPreview />
-      </div>
-      <FieldConfigModal open={fieldModalOpen} fieldId={selectedFieldId} onClose={handleCloseFieldModal} />
-      <Modal open={dsModalOpen} title={t('dataSource.title')} subtitle={t('dataSource.subtitle')} onClose={handleCloseDs}>
-        <DataSourcePanel />
-      </Modal>
-      <Modal open={tmplModalOpen} title={t('template.title')} subtitle={t('template.subtitle')} onClose={handleCloseTmpl}>
-        <TemplateLibrary onSelect={handleCloseTmpl} />
-      </Modal>
-      <Toast visible={!!toastMessage} message={toastMessage ?? ''} />
+      {!hasSeenWelcome ? (
+        <Welcome onOpenTemplates={handleOpenTmpl} />
+      ) : (
+        <>
+          <TopBar onTemplate={handleOpenTmpl} onDataSource={handleOpenDs} />
+          <div className="main">
+            <SchemaEditor onEditField={handleEditField} />
+            <DataPreview />
+          </div>
+          <FieldConfigModal open={fieldModalOpen} fieldId={selectedFieldId} onClose={handleCloseFieldModal} />
+          <Modal open={dsModalOpen} title={t('dataSource.title')} subtitle={t('dataSource.subtitle')} onClose={handleCloseDs}>
+            <DataSourcePanel />
+          </Modal>
+          <Modal open={tmplModalOpen} title={t('template.title')} subtitle={t('template.subtitle')} onClose={handleCloseTmpl}>
+            <TemplateLibrary onSelect={handleCloseTmpl} />
+          </Modal>
+          <Toast visible={!!toastMessage} message={toastMessage ?? ''} />
+        </>
+      )}
     </>
   )
 }

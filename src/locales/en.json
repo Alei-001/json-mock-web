@@ -94,6 +94,21 @@
     "downloaded": "JSON file downloaded",
     "placeholder": "Click 'Regenerate' to view data"
   },
+  "welcome": {
+    "tagline": "Visual JSON Schema Editor & Realistic Mock Data Generator",
+    "featureVisualTitle": "Visual Tree Editor",
+    "featureVisualDesc": "Intuitive tree view to design nested objects and arrays with ease.",
+    "featureStrategiesTitle": "20+ Data Strategies",
+    "featureStrategiesDesc": "Email, name, phone, UUID, address, price, and more — powered by Faker.js.",
+    "featureExportTitle": "Export JSON & CSV",
+    "featureExportDesc": "Copy to clipboard or download as JSON. Export as CSV for spreadsheets.",
+    "featureTemplatesTitle": "Preset Templates",
+    "featureTemplatesDesc": "Built-in User, Order, Product, Article, and Employee schemas to jump-start.",
+    "strategies": "Built-in strategies:",
+    "startTemplate": "Start from Template",
+    "tryDemo": "Try Demo Data",
+    "skip": "Skip to Editor"
+  },
   "strategies": {
     "email": "Email",
     "name": "Full Name",

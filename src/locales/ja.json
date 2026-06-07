@@ -7,6 +7,21 @@
   "dataSource": { "title": "データソース管理", "subtitle": "データソース管理", "importFile": "ファイル選択", "noData": "データなし", "supportedFormats": "JSON/CSV/TXT/TSV対応", "formatGuide": "フォーマット", "jsonFormat": "配列形式", "csvTsvFormat": "先頭行見出し", "txtFormat": "1行1値", "noDataParsed": "データなし", "updated": "更新", "imported": "追加", "parseFailed": "解析失敗", "deleted": "削除", "delete": "削除", "value": "値" },
   "template": { "title": "テンプレート", "subtitle": "プリセット選択", "loaded": "「{{name}}」読込完了" },
   "dataPreview": { "copied": "コピー完了", "copyFailed": "コピー失敗", "downloaded": "ダウンロード完了", "placeholder": "「再生成」をクリック" },
+  "welcome": {
+    "tagline": "ビジュアルJSONスキーマエディタ & リアルなモックデータ生成",
+    "featureVisualTitle": "ビジュアルツリーエディタ",
+    "featureVisualDesc": "直感的なツリー表示でネスト構造を簡単に設計できます。",
+    "featureStrategiesTitle": "20以上の生成戦略",
+    "featureStrategiesDesc": "メール、名前、電話、UUID、住所、価格など、Faker.jsベース。",
+    "featureExportTitle": "JSON / CSV エクスポート",
+    "featureExportDesc": "クリップボードにコピーまたはJSONとしてダウンロード。CSV出力も対応。",
+    "featureTemplatesTitle": "プリセットテンプレート",
+    "featureTemplatesDesc": "ユーザー、注文、商品、記事、社員のスキーマを内蔵。",
+    "strategies": "内蔵戦略：",
+    "startTemplate": "テンプレートから始める",
+    "tryDemo": "デモデータを試す",
+    "skip": "エディタへスキップ"
+  },
   "strategies": { "email": "メール", "name": "氏名", "phone": "電話", "uri": "URL", "uuid": "UUID", "datetime": "日時", "pastDatetime": "過去日時", "ip": "IP", "sentence": "短文", "paragraph": "段落", "street": "住所", "city": "市区", "zipcode": "郵便番号", "jobType": "職種", "integer": "整数", "float": "小数", "price": "価格", "age": "年齢", "year": "年", "quantity": "数量", "random": "ランダム", "alwaysTrue": "常にtrue", "alwaysFalse": "常にfalse", "mostlyTrue": "ほぼtrue", "mostlyFalse": "ほぼfalse", "custom": "カスタム" },
   "templates": { "user": "ユーザー", "userDesc": "基本情報（住所・タグ）", "order": "注文", "orderDesc": "注文（明細・金額）", "product": "商品", "productDesc": "商品（分類・在庫・評価）", "article": "記事", "articleDesc": "ブログ（タグ・統計）", "employee": "社員", "employeeDesc": "社員（部署・スキル）" }
 }

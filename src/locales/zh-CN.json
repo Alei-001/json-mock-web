@@ -94,6 +94,21 @@
     "downloaded": "已下载 JSON 文件",
     "placeholder": "点击「重新生成」查看数据"
   },
+  "welcome": {
+    "tagline": "可视化 JSON Schema 编辑器 & 真实感 Mock 数据生成器",
+    "featureVisualTitle": "可视化树形编辑器",
+    "featureVisualDesc": "直观的树形视图，轻松设计嵌套对象与数组结构。",
+    "featureStrategiesTitle": "20+ 生成策略",
+    "featureStrategiesDesc": "邮箱、姓名、电话、UUID、地址、价格等，基于 Faker.js。",
+    "featureExportTitle": "导出 JSON / CSV",
+    "featureExportDesc": "一键复制或下载 JSON，也可导出为 CSV 用于电子表格工具。",
+    "featureTemplatesTitle": "预设模板",
+    "featureTemplatesDesc": "内置用户、订单、产品、文章、员工等常用 Schema 模板。",
+    "strategies": "内置策略：",
+    "startTemplate": "从模板开始",
+    "tryDemo": "试试演示数据",
+    "skip": "跳过，直接编辑"
+  },
   "strategies": {
     "email": "邮箱",
     "name": "姓名",
