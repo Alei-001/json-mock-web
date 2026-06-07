@@ -15,6 +15,62 @@
   z-index: 10;
 }
 
+.action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition: all 150ms ease-out;
+  position: relative;
+}
+
+.action-btn:hover {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--ink-secondary);
+}
+
+.action-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.action-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.action-btn::after {
+  content: attr(title);
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  white-space: nowrap;
+  padding: 4px 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
+  z-index: 50;
+}
+
+.action-btn:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ─── JSON Preview ─── */
 
 .json-preview {

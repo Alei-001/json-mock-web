@@ -92,6 +92,10 @@
     "copied": "Copied to clipboard",
     "copyFailed": "Copy failed",
     "downloaded": "JSON file downloaded",
+    "downloadedCsv": "CSV file downloaded",
+    "copy": "Copy JSON",
+    "downloadJson": "Download JSON",
+    "downloadCsv": "Download CSV",
     "placeholder": "Click 'Regenerate' to view data"
   },
   "welcome": {

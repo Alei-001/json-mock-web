@@ -92,6 +92,10 @@
     "copied": "已复制到剪贴板",
     "copyFailed": "复制失败",
     "downloaded": "已下载 JSON 文件",
+    "downloadedCsv": "已下载 CSV 文件",
+    "copy": "复制 JSON",
+    "downloadJson": "下载 JSON",
+    "downloadCsv": "下载 CSV",
     "placeholder": "点击「重新生成」查看数据"
   },
   "welcome": {

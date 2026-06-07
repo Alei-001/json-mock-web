@@ -6,7 +6,7 @@
   "fieldConfig": { "title": "フィールド設定", "fieldName": "名前", "fieldType": "型", "required": "必須", "toggleRequired": "必須切替", "nullProb": "null確率 (%)", "strategy": "生成戦略", "lengthRange": "長さ範囲", "valueRange": "値範囲", "min": "最小", "max": "最大", "itemRange": "要素数範囲", "minItems": "最小", "maxItems": "最大", "regex": "正規表現", "dataSource": "データソース", "noBinding": "なし", "noDataSourceHint": "データソース未登録", "samplingStrategy": "抽出方法", "random": "ランダム", "sequential": "順次", "saved": "保存完了" },
   "dataSource": { "title": "データソース管理", "subtitle": "データソース管理", "importFile": "ファイル選択", "noData": "データなし", "supportedFormats": "JSON/CSV/TXT/TSV対応", "formatGuide": "フォーマット", "jsonFormat": "配列形式", "csvTsvFormat": "先頭行見出し", "txtFormat": "1行1値", "noDataParsed": "データなし", "updated": "更新", "imported": "追加", "parseFailed": "解析失敗", "deleted": "削除", "delete": "削除", "value": "値" },
   "template": { "title": "テンプレート", "subtitle": "プリセット選択", "loaded": "「{{name}}」読込完了" },
-  "dataPreview": { "copied": "コピー完了", "copyFailed": "コピー失敗", "downloaded": "ダウンロード完了", "placeholder": "「再生成」をクリック" },
+  "dataPreview": { "copied": "コピー完了", "copyFailed": "コピー失敗", "downloaded": "JSONダウンロード完了", "downloadedCsv": "CSVダウンロード完了", "copy": "JSONをコピー", "downloadJson": "JSONをダウンロード", "downloadCsv": "CSVをダウンロード", "placeholder": "「再生成」をクリック" },
   "welcome": {
     "tagline": "ビジュアルJSONスキーマエディタ & リアルなモックデータ生成",
     "featureVisualTitle": "ビジュアルツリーエディタ",

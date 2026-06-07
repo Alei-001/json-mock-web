@@ -6,7 +6,7 @@
   "fieldConfig": { "title": "필드 설정", "fieldName": "이름", "fieldType": "타입", "required": "필수", "toggleRequired": "필수 전환", "nullProb": "null 확률 (%)", "strategy": "생성 전략", "lengthRange": "길이 범위", "valueRange": "값 범위", "min": "최소", "max": "최대", "itemRange": "요소 수 범위", "minItems": "최소", "maxItems": "최대", "regex": "정규식", "dataSource": "데이터소스", "noBinding": "없음", "noDataSourceHint": "데이터소스 없음", "samplingStrategy": "추출 방식", "random": "무작위", "sequential": "순차", "saved": "저장 완료" },
   "dataSource": { "title": "데이터소스 관리", "subtitle": "데이터소스 관리", "importFile": "파일 선택", "noData": "데이터 없음", "supportedFormats": "JSON/CSV/TXT/TSV 지원", "formatGuide": "형식 안내", "jsonFormat": "배열 형식", "csvTsvFormat": "첫 행 헤더", "txtFormat": "줄당 하나", "noDataParsed": "데이터 없음", "updated": "갱신", "imported": "추가", "parseFailed": "파싱 실패", "deleted": "삭제", "delete": "삭제", "value": "값" },
   "template": { "title": "템플릿", "subtitle": "프리셋 선택", "loaded": "「{{name}}」로드 완료" },
-  "dataPreview": { "copied": "복사 완료", "copyFailed": "복사 실패", "downloaded": "다운로드 완료", "placeholder": "「재생성」클릭" },
+  "dataPreview": { "copied": "복사 완료", "copyFailed": "복사 실패", "downloaded": "JSON 다운로드 완료", "downloadedCsv": "CSV 다운로드 완료", "copy": "JSON 복사", "downloadJson": "JSON 다운로드", "downloadCsv": "CSV 다운로드", "placeholder": "「재생성」클릭" },
   "welcome": {
     "tagline": "비주얼 JSON 스키마 편집기 & 사실적인 Mock 데이터 생성기",
     "featureVisualTitle": "비주얼 트리 편집기",
