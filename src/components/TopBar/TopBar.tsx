@@ -15,9 +15,9 @@ function Logo() {
   )
 }
 
-function NavButton({ icon, children, active = false }: { icon: React.ReactNode; children: React.ReactNode; active?: boolean }) {
+function NavButton({ icon, children, active = false, onClick }: { icon: React.ReactNode; children: React.ReactNode; active?: boolean; onClick?: () => void }) {
   return (
-    <button className={`${styles.navBtn} ${active ? styles.active : ''}`}>
+    <button className={`${styles.navBtn} ${active ? styles.active : ''}`} onClick={onClick}>
       {icon}
       {children}
     </button>
@@ -61,14 +61,14 @@ const projectIcon = (
   </svg>
 )
 
-export default function TopBar() {
+export default function TopBar({ onDataSource }: { onDataSource: () => void }) {
   return (
     <header className={styles.topbar}>
       <div className={styles.topbarLeft}>
         <Logo />
         <nav className={styles.topbarNav}>
           <NavButton icon={templateIcon}>模板库</NavButton>
-          <NavButton icon={dataSourceIcon}>数据源</NavButton>
+          <NavButton icon={dataSourceIcon} onClick={onDataSource}>数据源</NavButton>
           <NavButton icon={projectIcon}>项目</NavButton>
         </nav>
       </div>

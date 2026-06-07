@@ -3,50 +3,63 @@ import TopBar from './components/TopBar/TopBar'
 import SchemaEditor from './components/SchemaEditor/SchemaEditor'
 import DataPreview from './components/DataPreview/DataPreview'
 import FieldConfigModal from './components/Modal/FieldConfigModal'
-import Toast from './components/Toast/Toast'
+import Modal from './components/Modal/Modal'
+import DataSourcePanel from './components/DataSourcePanel/DataSourcePanel'
+import { useProjectStore } from './store/useProjectStore'
 
 function App() {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedField, setSelectedField] = useState('email')
-  const [toastVisible, setToastVisible] = useState(false)
+  const [fieldModalOpen, setFieldModalOpen] = useState(false)
+  const [dsModalOpen, setDsModalOpen] = useState(false)
 
-  const handleSelectField = useCallback((name: string) => {
-    setSelectedField(name)
-    setModalOpen(true)
+  const selectedFieldId = useProjectStore((s) => s.selectedFieldId)
+
+  const handleEditField = useCallback(() => {
+    setFieldModalOpen(true)
   }, [])
 
-  const handleCloseModal = useCallback(() => {
-    setModalOpen(false)
+  const handleCloseFieldModal = useCallback(() => {
+    setFieldModalOpen(false)
   }, [])
 
-  const handleCopy = useCallback(() => {
-    setToastVisible(true)
-    setTimeout(() => setToastVisible(false), 2000)
+  const handleOpenDs = useCallback(() => {
+    setDsModalOpen(true)
+  }, [])
+
+  const handleCloseDs = useCallback(() => {
+    setDsModalOpen(false)
   }, [])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && modalOpen) {
-        setModalOpen(false)
+      if (e.key === 'Escape') {
+        if (fieldModalOpen) setFieldModalOpen(false)
+        if (dsModalOpen) setDsModalOpen(false)
       }
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [modalOpen])
+  }, [fieldModalOpen, dsModalOpen])
 
   return (
     <>
-      <TopBar />
+      <TopBar onDataSource={handleOpenDs} />
       <div className="main">
-        <SchemaEditor onSelectField={handleSelectField} />
-        <DataPreview onCopy={handleCopy} />
+        <SchemaEditor onEditField={handleEditField} />
+        <DataPreview />
       </div>
       <FieldConfigModal
-        open={modalOpen}
-        fieldName={selectedField}
-        onClose={handleCloseModal}
+        open={fieldModalOpen}
+        fieldId={selectedFieldId}
+        onClose={handleCloseFieldModal}
       />
-      <Toast visible={toastVisible} />
+      <Modal
+        open={dsModalOpen}
+        title="数据源管理"
+        subtitle="管理已导入的数据源"
+        onClose={handleCloseDs}
+      >
+        <DataSourcePanel />
+      </Modal>
     </>
   )
 }

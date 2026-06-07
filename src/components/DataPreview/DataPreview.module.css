@@ -48,15 +48,15 @@
   white-space: pre;
 }
 
-/* Syntax colors */
-.json-key { color: var(--ink); }
-.json-string { color: var(--accent); }
-.json-number { color: var(--primary); }
-.json-boolean { color: var(--accent); }
-.json-null { color: var(--muted); }
-.json-bracket { color: var(--ink-secondary); }
-.json-colon { color: var(--muted); }
-.json-comma { color: var(--muted); }
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
 
 /* ─── Action Bar ─── */
 
