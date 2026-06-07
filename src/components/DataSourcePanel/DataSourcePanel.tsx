@@ -46,15 +46,17 @@ export default function DataSourcePanel() {
           setError('文件中没有可解析的数据')
           return
         }
+        const dsName = file.name.replace(/\.[^.]+$/, '')
+        const existing = dataSources.find((d) => d.name === dsName)
         const ds: DataSource = {
-          id: `ds_${Date.now()}`,
-          name: file.name.replace(/\.[^.]+$/, ''),
+          id: existing ? existing.id : `ds_${Date.now()}`,
+          name: dsName,
           type,
           data,
           createdAt: new Date().toISOString(),
         }
         addDataSource(ds)
-        showToast(`已导入 ${ds.name}`)
+        showToast(existing ? `已更新 ${ds.name}` : `已导入 ${ds.name}`)
       } catch (err) {
         setError(`解析失败: ${(err as Error).message}`)
       }

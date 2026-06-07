@@ -16,6 +16,11 @@ function App() {
 
   const selectedFieldId = useProjectStore((s) => s.selectedFieldId)
   const toastMessage = useProjectStore((s) => s.toastMessage)
+  const theme = useProjectStore((s) => s.theme)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
 
   const handleEditField = useCallback(() => setFieldModalOpen(true), [])
   const handleCloseFieldModal = useCallback(() => setFieldModalOpen(false), [])

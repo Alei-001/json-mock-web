@@ -6,6 +6,8 @@ import { demoSchema, demoFieldConfigs, demoGenerationConfig } from '../constants
 import { generateData } from '../utils/generator'
 import { jsonSchemaToSchemaField } from '../utils/schemaConverter'
 
+type Theme = 'light' | 'dark'
+
 /* ─── Tree helpers ─── */
 
 function findNode(root: SchemaField, id: string): SchemaField | null {
@@ -56,6 +58,7 @@ function generateId(parentId: string): string {
 /* ─── Store ─── */
 
 interface ProjectState {
+  theme: Theme
   schema: SchemaField
   fieldConfigs: Record<string, FieldConfig>
   selectedFieldId: string | null
@@ -64,6 +67,8 @@ interface ProjectState {
   dataSources: DataSource[]
   bindings: Record<string, Binding>
   toastMessage: string | null
+
+  toggleTheme: () => void
 
   selectField: (id: string | null) => void
   toggleFieldCollapsed: (id: string) => void
@@ -86,6 +91,7 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>()(
   persist(
     (set) => ({
+      theme: 'light',
       schema: clone(demoSchema),
       fieldConfigs: clone(demoFieldConfigs),
       selectedFieldId: null,
@@ -231,9 +237,20 @@ export const useProjectStore = create<ProjectState>()(
   },
 
   addDataSource: (ds) => {
-    set((state) => ({
-      dataSources: [...state.dataSources, ds],
-    }))
+    set((state) => {
+      const existing = state.dataSources.findIndex((d) => d.name === ds.name)
+      if (existing >= 0) {
+        const updated = [...state.dataSources]
+        updated[existing] = ds
+        return {
+          dataSources: updated,
+          bindings: Object.fromEntries(
+            Object.entries(state.bindings).filter(([, b]) => b.dataSourceId !== state.dataSources[existing].id),
+          ),
+        }
+      }
+      return { dataSources: [...state.dataSources, ds] }
+    })
   },
 
   removeDataSource: (id) => {
@@ -265,10 +282,15 @@ export const useProjectStore = create<ProjectState>()(
       set({ toastMessage: null })
     }, 2000)
   },
+
+  toggleTheme: () => {
+    set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' }))
+  },
 }),
 {
   name: 'json-mock-project',
   partialize: (state) => ({
+      theme: state.theme,
       schema: state.schema,
       fieldConfigs: state.fieldConfigs,
       generationConfig: state.generationConfig,

@@ -13,32 +13,41 @@ import { MAX_GENERATE_COUNT } from '../../types'
 
 const objectIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 7c0-1.7 1.3-3 3-3h10c1.7 0 3 1.3 3 3v10c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3z" />
-    <path d="M9 10h6" />
-    <path d="M12 7v6" />
+    <path d="M8 3H6a2 2 0 00-2 2v3c0 1.1-.9 2-2 2v4c1.1 0 2 .9 2 2v3a2 2 0 002 2h2" />
+    <path d="M16 21h2a2 2 0 002-2v-3c0-1.1.9-2 2-2v-4c-1.1 0-2-.9-2-2V5a2 2 0 00-2-2h-2" />
   </svg>
 )
 
 const arrayIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 7V4h16v3" />
-    <path d="M4 17v3h16v-3" />
-    <path d="M4 12h16" />
+    <path d="M6 4H4a2 2 0 00-2 2v12a2 2 0 002 2h2" />
+    <path d="M18 20h2a2 2 0 002-2V6a2 2 0 00-2-2h-2" />
+    <path d="M9 10h6" />
+    <path d="M9 14h4" />
   </svg>
 )
 
 const stringIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 7V4h16v3" />
-    <path d="M9 20h6" />
-    <path d="M12 4v16" />
+    <path d="M4 7h16" />
+    <path d="M4 12h12" />
+    <path d="M4 17h7" />
+  </svg>
+)
+
+const numberIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8 4v16" />
+    <path d="M16 4v16" />
+    <path d="M5 9h14" />
+    <path d="M5 15h14" />
   </svg>
 )
 
 const booleanIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z" />
-    <path d="m9 12 2 2 4-4" />
+    <path d="M4 5h16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2z" />
+    <path d="m8 12 2 2 4-4" />
   </svg>
 )
 
@@ -46,8 +55,8 @@ const typeIcons: Record<string, React.ReactNode> = {
   object: objectIcon,
   array: arrayIcon,
   string: stringIcon,
-  integer: stringIcon,
-  number: stringIcon,
+  integer: numberIcon,
+  number: numberIcon,
   boolean: booleanIcon,
 }
 
@@ -58,7 +67,7 @@ interface TreeNodeProps {
   depth: number
   selected: boolean
   isRoot: boolean
-  configTags: string[]
+  configTags: React.ReactNode[]
   onSelect: (id: string) => void
   onEdit: (id: string) => void
   onToggle: (id: string) => void
@@ -201,8 +210,8 @@ function computeConfigTags(
   fieldConfigs: Record<string, FieldConfig>,
   bindings: Record<string, Binding>,
   dataSources: DataSource[],
-): string[] {
-  const tags: string[] = []
+): React.ReactNode[] {
+  const tags: React.ReactNode[] = []
   const config = fieldConfigs[field.id]
 
   if (config?.fakerType) {
@@ -236,7 +245,15 @@ function computeConfigTags(
   const binding = bindings[field.id]
   if (binding) {
     const ds = dataSources.find((d) => d.id === binding.dataSourceId)
-    if (ds) tags.push(`⚓ ${ds.name}`)
+    if (ds) tags.push(
+      <span key={`b-${field.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 10, height: 10, flexShrink: 0 }}>
+          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+        </svg>
+        {ds.name}
+      </span>,
+    )
   }
 
   return tags

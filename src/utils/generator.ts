@@ -3,6 +3,8 @@ import type { SchemaField, FieldConfig, GenerationConfig, DataSource, Binding } 
 import { MAX_GENERATE_COUNT } from '../types'
 import { getStrategyById } from '../constants/strategies'
 
+const OMIT_OPTIONAL_RATE = 0.3
+
 type FakerFn = () => string | number | boolean
 
 const FAKER_CALL_MAP: Record<string, FakerFn> = {
@@ -177,6 +179,7 @@ function generateObject(field: SchemaField, fieldConfigs: Record<string, FieldCo
   const result: Record<string, unknown> = {}
   if (field.children) {
     for (const child of field.children) {
+      if (!child.required && Math.random() < OMIT_OPTIONAL_RATE) continue
       result[child.name] = generateFieldValue(child, fieldConfigs[child.id], fieldConfigs, dataSources, bindings)
     }
   }
@@ -221,6 +224,7 @@ function generateFromRoot(schema: SchemaField, fieldConfigs: Record<string, Fiel
     const result: Record<string, unknown> = {}
     if (schema.children) {
       for (const child of schema.children) {
+        if (!child.required && Math.random() < OMIT_OPTIONAL_RATE) continue
         result[child.name] = generateFieldValue(child, fieldConfigs[child.id], fieldConfigs, dataSources, bindings)
       }
     }

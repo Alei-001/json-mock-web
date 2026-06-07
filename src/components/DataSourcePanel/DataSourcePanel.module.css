@@ -3,8 +3,9 @@
 .data-source-panel {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  max-height: 60vh;
+  min-height: 200px;
+  overflow-y: auto;
 }
 
 .import-bar {
@@ -52,6 +53,7 @@
 .ds-list {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 8px;
 }
 
