@@ -14,46 +14,57 @@
 
 ## 2. 技术栈
 
-| 项 | 选型 |
-|----|------|
-| 框架 | React 18+ / TypeScript |
-| 构建工具 | Vite |
-| 状态管理 | Zustand |
-| 样式 | Tailwind CSS |
-| 代码编辑器 | Monaco Editor (`@monaco-editor/react`) |
-| Mock 生成 | `json-schema-faker` + `@faker-js/faker` |
-| CSV 解析 | `papaparse` |
-| Excel 解析 | `xlsx` |
-| 图标 | `lucide-react` |
-| 持久化 | localStorage / 文件导入导出 |
-| 部署 | 静态部署（纯前端，无后端） |
+| 项 | 选型 | 状态 |
+|----|------|------|
+| 框架 | React 19 + TypeScript | 已引入 |
+| 构建工具 | Vite 8 | 已配置 |
+| 状态管理 | Zustand | 待引入 |
+| 样式 | CSS Modules（OKLCH 色板 + Inter / JetBrains Mono 字体） | 已实施 |
+| 代码编辑器 | Monaco Editor (`@monaco-editor/react`) | 待引入 |
+| Mock 生成 | `json-schema-faker` + `@faker-js/faker` | 待引入 |
+| CSV 解析 | `papaparse` | 待引入 |
+| Excel 解析 | `xlsx` | 待引入 |
+| 图标 | 内联 SVG（后续可替换为 `lucide-react`） | 已实施 |
+| 持久化 | localStorage / 文件导入导出 | 待实施 |
+| 部署 | 静态部署（纯前端，无后端） | — |
 
 ---
 
 ## 3. 页面布局
 
 ```
-┌───────────────────────────────────────────────────────┐
-│  Header: Logo │ 主题切换 │ 项目导入 / 导出 / 保存      │
-├───────────┬────────────────────┬──────────────────────┤
-│  Sidebar  │    主编辑区         │     预览区            │
-│           │ ┌────────────────┐ │ ┌──────────────────┐ │
-│  模板库   │ │ [可视化] [文本] │ │ │ 生成数量: [10]   │ │
-│  数据源   │ │                │ │ │ 种子值:  [       ]│ │
-│  管理     │ │  字段树 / JSON  │ │ │ [重新生成]       │ │
-│           │ │  Schema 编辑器  │ │ │                  │ │
-│           │ │                │ │ │  JSON / 表格 预览 │ │
-│           │ ├────────────────┤ │ │                  │ │
-│           │ │  字段配置面板   │ │ ├──────────────────┤ │
-│           │ │  (类型/faker/  │ │ │ [复制] [下载]    │ │
-│           │ │   约束/数据源) │ │ │ [导出模板]       │ │
-│           │ └────────────────┘ │ └──────────────────┘ │
-└───────────┴────────────────────┴──────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  TopBar                                                         │
+│  [Logo JSON Mock] [模板库] [数据源] [项目]          [保存]     │
+├────────────────────────────────┬────────────────────────────────┤
+│  左面板                        │  右面板                         │
+│ ┌────────────────────────────┐ │ ┌────────────────────────────┐ │
+│ │ Schema 编辑器  [可视化][文本]│ │ │ 数据预览  [JSON][表格]     │ │
+│ │ [导入模板] [导出模板]       │ │ │                            │ │
+│ ├────────────────────────────┤ │ ├────────────────────────────┤ │
+│ │ ▼ root            object   │ │ │ 数量 [1] 种子 [___] [重新生成]│ │
+│ │   name*           string   │ │ ├────────────────────────────┤ │
+│ │   age*            integer  │ │ │ 1  {                       │ │
+│ │ ▸ email*          string   │ │ │ 2    "name": "张伟",       │ │
+│ │ ▸ address         object   │ │ │ 3    "age": 28,            │ │
+│ │ ▼ tags            array    │ │ │ ...                        │ │
+│ │     [0]           string   │ │ │ 13 }                       │ │
+│ │   isActive        boolean  │ │ ├────────────────────────────┤ │
+│ │   createdAt       string   │ │ │ [复制 JSON] [下载 JSON]    │ │
+│ │ + 添加字段                 │ │ │ [下载 CSV]                 │ │
+│ └────────────────────────────┘ │ └────────────────────────────┘ │
+└────────────────────────────────┴────────────────────────────────┘
 ```
 
-- **Sidebar**（左侧）：模板库、数据源管理、项目切换
-- **主编辑区**（中间）：可视化/文本双模式 Schema 编辑器 + 字段配置面板
-- **预览区**（右侧）：生成控制栏 + JSON/表格预览 + 导出操作栏
+- **TopBar**（顶部 56px）：Logo、导航（模板库/数据源/项目）、保存按钮
+- **左面板**（50%）：Schema 编辑器卡片，包含 CardHeader + 可视化/文本 tab + SchemaTree
+- **右面板**（50%）：数据预览卡片 + 操作栏，包含 GenControls + JSON 预览 + 导出按钮
+- **Modal**：点击树节点弹出字段配置弹窗（Faker 类型、约束、数据源绑定）
+- **Toast**：操作反馈提示（如"已复制到剪贴板"）
+
+### 3.1 设计系统
+
+详细视觉设计参见 `DESIGN.md`（OKLCH 色板、字体、间距、组件规格）。设计稿参考 `design-mockup.html`。
 
 ---
 
@@ -218,17 +229,29 @@ interface GenerationConfig {
 ```
 src/
 ├── components/
-│   ├── layout/           # Header, Sidebar, MainPanel, PreviewPanel
-│   ├── schema/           # VisualEditor, TextEditor, SchemaNode, FieldConfigPanel
-│   ├── datasource/       # DataSourceManager, DataSourcePreview, BindingModal
-│   ├── preview/          # JsonPreview, TableView, GenerationControls, ExportBar
-│   └── common/           # ThemeToggle, FileDropzone, ConfirmDialog
-├── store/                # Zustand stores
-├── utils/                # generator, parsers, exporters
-├── types/                # TypeScript 类型定义
-├── constants/            # 内置模板、faker 类型映射
-└── hooks/                # 自定义 hooks
+│   ├── TopBar/               # TopBar.tsx + .module.css（Logo、导航、保存按钮）
+│   ├── SchemaEditor/         # SchemaEditor.tsx + .module.css
+│   │   └── 含 CardHeader（可视化/文本 tabs + 导入/导出按钮）
+│   │   └── 含 SchemaTree（TreeNode + AddFieldButton）
+│   ├── DataPreview/          # DataPreview.tsx + .module.css
+│   │   └── 含 GenControls（数量/种子/重新生成）
+│   │   └── 含 JsonPreview（语法高亮行渲染）
+│   │   └── 含 ActionBar（复制 JSON / 下载 JSON / 下载 CSV）
+│   ├── Modal/                # Modal.tsx（通用外壳）+ FieldConfigModal.tsx（字段配置）
+│   └── Toast/                # Toast.tsx（操作反馈提示）
+├── store/                    # Zustand stores（待创建）
+├── utils/                    # generator, parsers, exporters（待创建）
+├── types/                    # TypeScript 类型定义（待创建）
+├── constants/                # 内置模板、faker 类型映射（待创建）
+└── hooks/                    # 自定义 hooks（待创建）
 ```
+
+### 6.1 布局说明
+
+- **左右两栏布局**（50/50），无 Sidebar，导航通过 TopBar 的按钮实现
+- 左面板：Schema 编辑器卡片（Header + SchemaTree）
+- 右面板：数据预览卡片（Header + GenControls + JSON/表格预览） + 操作栏
+- 全局 UI 状态（tabs、modal、toast）当前在 App.tsx 中管理，后续迁移至 Zustand
 
 ---
 
@@ -236,13 +259,33 @@ src/
 
 ### 迭代一：MVP
 
-- [ ] 三栏布局 + Header
-- [ ] 可视化 Schema 编辑器（增删改字段、嵌套、required）
-- [ ] 文本编辑器（Monaco Editor + 双向同步）
-- [ ] 字段配置面板（faker 类型选择、约束条件）
-- [ ] 实时 JSON 预览 + 语法高亮
-- [ ] 批量生成 + 种子控制
-- [ ] 导出（复制剪贴板、下载 JSON、下载 CSV）
+| 模块 | 进度 |
+|------|------|
+| 左右两栏布局 + TopBar | UI 完成，待接入逻辑 |
+| 可视化 Schema 编辑器 UI（树节点渲染、展开/折叠、节点选中、添加/删除按钮） | UI 完成，增删改逻辑待实施 |
+| 字段配置弹窗 UI（Faker 类型、格式、约束、数据源绑定区域） | UI 完成，store 绑定待实施 |
+| JSON 预览 + 语法高亮 | UI 完成（静态 mock），动态数据绑定待实施 |
+| 生成控制栏 UI（数量、种子、重新生成） | UI 完成，Mock 生成逻辑待实施 |
+| 操作栏 UI（复制、下载 JSON、下载 CSV） | UI 完成，导出逻辑待实施 |
+| 文本编辑器（Monaco Editor + 双向同步） | 待实施 |
+| 表格预览 | 待实施 |
+
+#### 详细任务
+
+- [x] 左右两栏布局 + TopBar（Logo、导航、保存按钮）
+- [x] 可视化 Schema 编辑器 UI（TreeNode 渲染、toggle 展开、hover actions、required 标记）
+- [x] 字段配置 Modal（Faker 类型选择、格式、约束条件输入、数据源绑定占位）
+- [x] JSON 预览 UI（行号 + 语法高亮着色：key/string/number/boolean/bracket）
+- [x] 生成控制栏 UI（数量 input、种子 input、重新生成按钮）
+- [x] 操作栏 UI（复制 JSON / 下载 JSON / 下载 CSV 按钮）
+- [x] Toast 提示组件（复制成功反馈）
+- [x] Tab 切换 UI（可视化 ↔ 文本、JSON ↔ 表格）
+- [ ] 可视化 Schema 编辑器逻辑（增删改字段 F-01~03、嵌套 F-04~05、required F-06）
+- [ ] 文本编辑器（Monaco Editor F-09 + 校验 F-10 + 双向同步 F-11）
+- [ ] 字段配置接入 store（Faker 策略 F-12、约束条件 F-13、自定义表达式 F-14）
+- [ ] 实时 JSON 预览（json-schema-faker 生成 F-16 + 动态渲染 F-21）
+- [ ] 批量生成 + 种子控制逻辑（F-17~19）
+- [ ] 导出逻辑（复制 F-23、下载 JSON F-24、下载 CSV F-25）
 
 ### 迭代二：数据源绑定
 
