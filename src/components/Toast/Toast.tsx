@@ -2,10 +2,10 @@ import styles from './Toast.module.css'
 
 interface ToastProps {
   visible: boolean
-  message?: string
+  message: string
 }
 
-export default function Toast({ visible, message = '已复制到剪贴板' }: ToastProps) {
+export default function Toast({ visible, message }: ToastProps) {
   return (
     <div className={`${styles.toast} ${visible ? styles.visible : ''}`} role="status" aria-live="polite">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

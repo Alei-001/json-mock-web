@@ -27,6 +27,7 @@ export default function DataSourcePanel() {
   const dataSources = useProjectStore((s) => s.dataSources)
   const addDataSource = useProjectStore((s) => s.addDataSource)
   const removeDataSource = useProjectStore((s) => s.removeDataSource)
+  const showToast = useProjectStore((s) => s.showToast)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -53,6 +54,7 @@ export default function DataSourcePanel() {
           createdAt: new Date().toISOString(),
         }
         addDataSource(ds)
+        showToast(`已导入 ${ds.name}`)
       } catch (err) {
         setError(`解析失败: ${(err as Error).message}`)
       }
@@ -70,6 +72,7 @@ export default function DataSourcePanel() {
   const handleDelete = (id: string) => {
     removeDataSource(id)
     setPreviewIndex(null)
+    showToast('已删除数据源')
   }
 
   const previewDs = previewIndex !== null ? dataSources[previewIndex] : null

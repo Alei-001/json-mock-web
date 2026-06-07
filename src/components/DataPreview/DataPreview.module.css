@@ -1,16 +1,18 @@
-.gen-controls {
+.preview-wrap {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  height: 46px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
 }
 
-.gen-spacer {
-  flex: 1;
+.floating-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
 }
 
 /* ─── JSON Preview ─── */
@@ -52,19 +54,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  flex: 1;
   color: var(--muted);
   font-family: var(--font-sans);
   font-size: 14px;
-}
-
-/* ─── Action Bar ─── */
-
-.action-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
 }

@@ -60,7 +60,7 @@ export const demoSchema: SchemaField = {
       collapsed: false,
       items: {
         id: 'root.tags[0]',
-        name: '[0]',
+        name: 'item',
         type: 'string',
         required: false,
       },

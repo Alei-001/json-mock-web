@@ -1,0 +1,78 @@
+.tmpl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.tmpl-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 150ms ease-out;
+  gap: 8px;
+}
+
+.tmpl-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-10);
+}
+
+.tmpl-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.tmpl-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tmpl-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.tmpl-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tmpl-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tmpl-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.tmpl-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tmpl-tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink-secondary);
+}

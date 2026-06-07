@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
-import type { SchemaField, FieldConfig, GenerationConfig, DataSource } from '../types'
+import type { SchemaField, FieldConfig, GenerationConfig, DataSource, Binding } from '../types'
+import { MAX_GENERATE_COUNT } from '../types'
 import { getStrategyById } from '../constants/strategies'
 
 type FakerFn = () => string | number | boolean
@@ -33,6 +34,22 @@ const FAKER_CALL_CONSTRAINED: Record<string, ConstrainedFn> = {
   'commerce.price': (min, max) => Number(faker.commerce.price({ min, max })),
 }
 
+function applyStringConstraints(value: string, min: number | undefined, max: number | undefined): string {
+  if (max !== undefined && value.length > max) {
+    return value.slice(0, max)
+  }
+  if (min !== undefined && value.length < min) {
+    return value.padEnd(min, value[value.length - 1] ?? 'x')
+  }
+  return value
+}
+
+function applyNumberConstraints(value: number, min: number | undefined, max: number | undefined): number {
+  if (min !== undefined && value < min) return min
+  if (max !== undefined && value > max) return max
+  return value
+}
+
 function mergeConstraints(
   preset: Partial<NonNullable<FieldConfig['constraints']>> | undefined,
   user: Partial<NonNullable<FieldConfig['constraints']>> | undefined,
@@ -46,20 +63,19 @@ function generateFieldValue(
   config: FieldConfig | undefined,
   fieldConfigs: Record<string, FieldConfig>,
   dataSources: DataSource[],
-  bindings: Record<string, string>,
+  bindings: Record<string, Binding>,
 ): unknown {
   // Check if field is bound to a data source
   const binding = bindings[field.id]
   if (binding) {
-    const [dsId, strategy] = binding.split(':')
-    const ds = dataSources.find((d) => d.id === dsId)
+    const ds = dataSources.find((d) => d.id === binding.dataSourceId)
     if (ds && ds.data.length > 0) {
-      if (strategy === 'random') {
+      if (binding.strategy === 'random') {
         return ds.data[Math.floor(Math.random() * ds.data.length)]
       }
-      // sequential: this is approximate — cycles through items per generation session
-      const index = sequentialCounter.get(dsId) ?? 0
-      sequentialCounter.set(dsId, (index + 1) % ds.data.length)
+      // sequential: cycles through items per generation session
+      const index = sequentialCounter.get(binding.dataSourceId) ?? 0
+      sequentialCounter.set(binding.dataSourceId, (index + 1) % ds.data.length)
       return ds.data[index]
     }
   }
@@ -79,7 +95,7 @@ function computeFieldValue(
   config: FieldConfig | undefined,
   fieldConfigs: Record<string, FieldConfig>,
   dataSources: DataSource[],
-  bindings: Record<string, string>,
+  bindings: Record<string, Binding>,
 ): unknown {
   const strategyId = config?.fakerType
   const strategy = strategyId ? getStrategyById(strategyId) : undefined
@@ -87,15 +103,30 @@ function computeFieldValue(
   // Strategy with fakerPath — must be compatible with field type
   if (strategy && !strategy.isCustom && strategy.fakerPath && strategy.fieldTypes.includes(field.type)) {
     const constraints = mergeConstraints(strategy.presetConstraints, config?.constraints)
-    const min = constraints?.minimum ?? constraints?.minLength
-    const max = constraints?.maximum ?? constraints?.maxLength
 
-    if (min !== undefined && max !== undefined && FAKER_CALL_CONSTRAINED[strategy.fakerPath]) {
-      return FAKER_CALL_CONSTRAINED[strategy.fakerPath](min, max)
+    // Check for constrained faker variant (number strategies only)
+    const numMin = constraints?.minimum
+    const numMax = constraints?.maximum
+    if (numMin !== undefined && numMax !== undefined && FAKER_CALL_CONSTRAINED[strategy.fakerPath]) {
+      return FAKER_CALL_CONSTRAINED[strategy.fakerPath](numMin, numMax)
     }
 
     const fn = FAKER_CALL_MAP[strategy.fakerPath]
-    if (fn) return fn()
+    if (fn) {
+      const value = fn()
+      // Apply constraints post-hoc
+      if (typeof value === 'string') {
+        const strMin = constraints?.minLength
+        const strMax = constraints?.maxLength
+        if (strMin !== undefined || strMax !== undefined) {
+          return applyStringConstraints(value, strMin, strMax)
+        }
+      }
+      if (typeof value === 'number') {
+        return applyNumberConstraints(value, numMin, numMax)
+      }
+      return value
+    }
   }
 
   // Custom strategy with regex pattern — must be compatible
@@ -106,10 +137,10 @@ function computeFieldValue(
   // Fallback by field type
   switch (field.type) {
     case 'string': {
-      const min = config?.constraints?.minLength
-      const max = config?.constraints?.maxLength
-      if (min || max) {
-        return faker.string.alphanumeric({ length: { min: min ?? 1, max: max ?? 32 } })
+      const min = config?.constraints?.minLength != null ? Math.max(0, config.constraints.minLength) : undefined
+      const max = config?.constraints?.maxLength != null ? Math.max(0, config.constraints.maxLength) : undefined
+      if (min !== undefined || max !== undefined) {
+        return faker.string.alphanumeric({ length: { min: min ?? 1, max: max ?? Math.max(32, min ?? 0) } })
       }
       return faker.word.sample()
     }
@@ -123,8 +154,16 @@ function computeFieldValue(
       const max = config?.constraints?.maximum
       return faker.number.int({ min: min ?? 0, max: max ?? 100 })
     }
-    case 'boolean':
-      return faker.datatype.boolean()
+    case 'boolean': {
+      const boolStrategy = config?.fakerType || 'random'
+      switch (boolStrategy) {
+        case 'alwaysTrue': return true
+        case 'alwaysFalse': return false
+        case 'mostlyTrue': return Math.random() < 0.8
+        case 'mostlyFalse': return Math.random() < 0.2
+        default: return faker.datatype.boolean()
+      }
+    }
     case 'object':
       return generateObject(field, fieldConfigs, dataSources, bindings)
     case 'array':
@@ -134,7 +173,7 @@ function computeFieldValue(
   }
 }
 
-function generateObject(field: SchemaField, fieldConfigs: Record<string, FieldConfig>, dataSources: DataSource[], bindings: Record<string, string>): Record<string, unknown> {
+function generateObject(field: SchemaField, fieldConfigs: Record<string, FieldConfig>, dataSources: DataSource[], bindings: Record<string, Binding>): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   if (field.children) {
     for (const child of field.children) {
@@ -144,11 +183,14 @@ function generateObject(field: SchemaField, fieldConfigs: Record<string, FieldCo
   return result
 }
 
-function generateArray(field: SchemaField, fieldConfigs: Record<string, FieldConfig>, dataSources: DataSource[], bindings: Record<string, string>): unknown[] {
+function generateArray(field: SchemaField, fieldConfigs: Record<string, FieldConfig>, dataSources: DataSource[], bindings: Record<string, Binding>): unknown[] {
   const items = field.items
   if (!items) return []
 
-  const length = faker.number.int({ min: 1, max: 5 })
+  const config = fieldConfigs[field.id]
+  const minItems = Math.max(0, config?.constraints?.minItems ?? 1)
+  const maxItems = Math.max(minItems, config?.constraints?.maxItems ?? 5)
+  const length = minItems >= maxItems ? minItems : faker.number.int({ min: minItems, max: maxItems })
   return Array.from({ length }, () => generateFieldValue(items, fieldConfigs[items.id], fieldConfigs, dataSources, bindings))
 }
 
@@ -157,7 +199,7 @@ export function generateData(
   fieldConfigs: Record<string, FieldConfig>,
   config: GenerationConfig,
   dataSources: DataSource[] = [],
-  bindings: Record<string, string> = {},
+  bindings: Record<string, Binding> = {},
 ): unknown {
   if (config.seed) {
     faker.seed(Number(config.seed))
@@ -165,7 +207,7 @@ export function generateData(
     faker.seed()
   }
 
-  const count = config.count || 1
+  const count = Math.max(1, Math.min(config.count || 1, MAX_GENERATE_COUNT))
 
   if (count === 1) {
     return generateFromRoot(schema, fieldConfigs, dataSources, bindings)
@@ -174,7 +216,7 @@ export function generateData(
   return Array.from({ length: count }, () => generateFromRoot(schema, fieldConfigs, dataSources, bindings))
 }
 
-function generateFromRoot(schema: SchemaField, fieldConfigs: Record<string, FieldConfig>, dataSources: DataSource[], bindings: Record<string, string>): unknown {
+function generateFromRoot(schema: SchemaField, fieldConfigs: Record<string, FieldConfig>, dataSources: DataSource[], bindings: Record<string, Binding>): unknown {
   if (schema.type === 'object') {
     const result: Record<string, unknown> = {}
     if (schema.children) {

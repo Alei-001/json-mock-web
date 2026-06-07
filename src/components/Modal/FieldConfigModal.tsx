@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import Modal from './Modal'
+import Select from '../Select/Select'
 import { useProjectStore } from '../../store/useProjectStore'
 import { getStrategiesForType, getStrategyById } from '../../constants/strategies'
 import type { SchemaField, FieldType, FieldConfig } from '../../types'
@@ -33,6 +34,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
   const updateFieldConfig = useProjectStore((s) => s.updateFieldConfig)
   const bindField = useProjectStore((s) => s.bindField)
   const unbindField = useProjectStore((s) => s.unbindField)
+  const showToast = useProjectStore((s) => s.showToast)
 
   const field = fieldId ? findNodeById(schema, fieldId) : null
   const [fieldName, setFieldName] = useState('')
@@ -41,6 +43,8 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
   const [strategy, setStrategy] = useState('')
   const [minValue, setMinValue] = useState('')
   const [maxValue, setMaxValue] = useState('')
+  const [minItems, setMinItems] = useState('')
+  const [maxItems, setMaxItems] = useState('')
   const [pattern, setPattern] = useState('')
   const [nullProb, setNullProb] = useState('')
   const [boundDsId, setBoundDsId] = useState('')
@@ -57,13 +61,14 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
       setStrategy(savedStrategy)
       setMinValue(config?.constraints?.minimum?.toString() ?? config?.constraints?.minLength?.toString() ?? '')
       setMaxValue(config?.constraints?.maximum?.toString() ?? config?.constraints?.maxLength?.toString() ?? '')
+      setMinItems(config?.constraints?.minItems?.toString() ?? '')
+      setMaxItems(config?.constraints?.maxItems?.toString() ?? '')
       setPattern(config?.constraints?.pattern ?? '')
       setNullProb(config?.nullProbability?.toString() ?? '')
       const binding = fieldId ? bindings[fieldId] : undefined
       if (binding) {
-        const [dsId, strat] = binding.split(':')
-        setBoundDsId(dsId)
-        setSamplingStr((strat as 'random' | 'sequential') || 'random')
+        setBoundDsId(binding.dataSourceId)
+        setSamplingStr(binding.strategy)
       } else {
         setBoundDsId('')
         setSamplingStr('random')
@@ -104,11 +109,16 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
     const minNum = minValue !== '' ? Number(minValue) : undefined
     const maxNum = maxValue !== '' ? Number(maxValue) : undefined
+    const minItemsNum = minItems !== '' ? Number(minItems) : undefined
+    const maxItemsNum = maxItems !== '' ? Number(maxItems) : undefined
 
     if (fieldType === 'string') {
       const constraints: NonNullable<FieldConfig['constraints']> = {}
-      if (minNum !== undefined) constraints.minLength = minNum
-      if (maxNum !== undefined) constraints.maxLength = maxNum
+      if (minNum !== undefined) constraints.minLength = Math.max(0, minNum)
+      if (maxNum !== undefined) constraints.maxLength = Math.max(0, maxNum)
+      if (constraints.minLength !== undefined && constraints.maxLength !== undefined && constraints.minLength > constraints.maxLength) {
+        constraints.maxLength = constraints.minLength
+      }
       if (pattern) constraints.pattern = pattern
       if (Object.keys(constraints).length > 0) configUpdate.constraints = constraints
       else configUpdate.constraints = undefined
@@ -116,6 +126,18 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
       const constraints: NonNullable<FieldConfig['constraints']> = {}
       if (minNum !== undefined) constraints.minimum = minNum
       if (maxNum !== undefined) constraints.maximum = maxNum
+      if (constraints.minimum !== undefined && constraints.maximum !== undefined && constraints.minimum > constraints.maximum) {
+        constraints.maximum = constraints.minimum
+      }
+      if (Object.keys(constraints).length > 0) configUpdate.constraints = constraints
+      else configUpdate.constraints = undefined
+    } else if (fieldType === 'array') {
+      const constraints: NonNullable<FieldConfig['constraints']> = {}
+      if (minItemsNum !== undefined) constraints.minItems = Math.max(0, minItemsNum)
+      if (maxItemsNum !== undefined) constraints.maxItems = Math.max(0, maxItemsNum)
+      if (constraints.minItems !== undefined && constraints.maxItems !== undefined && constraints.minItems > constraints.maxItems) {
+        constraints.maxItems = constraints.minItems
+      }
       if (Object.keys(constraints).length > 0) configUpdate.constraints = constraints
       else configUpdate.constraints = undefined
     }
@@ -131,6 +153,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
       unbindField(fieldId)
     }
 
+    showToast('配置已保存')
     onClose()
   }
 
@@ -139,10 +162,9 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
   const currentStrategyInfo = getStrategyById(strategy)
   const isCustom = currentStrategyInfo?.isCustom ?? false
   const showConstraints = hasStrategy && !isCustom && (fieldType === 'string' || fieldType === 'number' || fieldType === 'integer')
+  const showArrayConstraints = fieldType === 'array'
 
   const isStringType = fieldType === 'string'
-  const minLabel = isStringType ? '最小长度' : '最小值'
-  const maxLabel = isStringType ? '最大长度' : '最大值'
 
   const displayName = field ? field.name : (fieldId ?? '')
 
@@ -172,11 +194,10 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
         <div className="form-group full-width">
           <label className="form-label">字段类型</label>
-          <select
-            className="form-select"
+          <Select
             value={fieldType}
-            onChange={(e) => {
-              const t = e.target.value as FieldType
+            onChange={(val) => {
+              const t = val as FieldType
               setFieldType(t)
               const first = getStrategiesForType(t)[0]
               if (first) {
@@ -198,11 +219,8 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
                 setMaxValue('')
               }
             }}
-          >
-            {FIELD_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+            options={FIELD_TYPES.map((t) => ({ value: t, label: t }))}
+          />
         </div>
 
         <div className="form-group full-width">
@@ -232,41 +250,66 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
         {hasStrategy && (
           <div className="form-group full-width">
             <label className="form-label">生成策略</label>
-            <select
-              className="form-select"
+            <Select
               value={strategy}
-              onChange={(e) => handleStrategyChange(e.target.value)}
-            >
-              {currentStrategies.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
+              onChange={handleStrategyChange}
+              options={currentStrategies.map((s) => ({ value: s.id, label: s.label }))}
+            />
           </div>
         )}
 
         {showConstraints && (
-          <>
-            <div className="form-group">
-              <label className="form-label">{minLabel}</label>
+          <div className="form-group full-width">
+            <label className="form-label">{isStringType ? '长度范围' : '值范围'}</label>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <input
                 type="number"
                 className="form-input"
+                min={isStringType ? 0 : undefined}
                 value={minValue}
                 onChange={(e) => setMinValue(e.target.value)}
-                placeholder="不限"
+                placeholder="最小"
+                style={{ flex: 1 }}
               />
-            </div>
-            <div className="form-group">
-              <label className="form-label">{maxLabel}</label>
+              <span style={{ color: 'var(--muted)', fontSize: 12 }}>-</span>
               <input
                 type="number"
                 className="form-input"
+                min={isStringType ? 0 : undefined}
                 value={maxValue}
                 onChange={(e) => setMaxValue(e.target.value)}
-                placeholder="不限"
+                placeholder="最大"
+                style={{ flex: 1 }}
               />
             </div>
-          </>
+          </div>
+        )}
+
+        {showArrayConstraints && (
+          <div className="form-group full-width">
+            <label className="form-label">元素个数范围</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                value={minItems}
+                onChange={(e) => setMinItems(e.target.value)}
+                placeholder="最少"
+                style={{ flex: 1 }}
+              />
+              <span style={{ lineHeight: '36px', color: 'var(--muted)', fontSize: 12 }}>-</span>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                value={maxItems}
+                onChange={(e) => setMaxItems(e.target.value)}
+                placeholder="最多"
+                style={{ flex: 1 }}
+              />
+            </div>
+          </div>
         )}
 
         {hasStrategy && isCustom && (
@@ -286,17 +329,16 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
           <>
             <div className="form-group full-width">
               <label className="form-label">数据源</label>
-              <select
-                className="form-select"
+              <Select
                 value={boundDsId}
-                onChange={(e) => setBoundDsId(e.target.value)}
+                onChange={(val) => setBoundDsId(val)}
                 disabled={dataSources.length === 0}
-              >
-                <option value="">不绑定</option>
-                {dataSources.map((ds) => (
-                  <option key={ds.id} value={ds.id}>{ds.name} ({ds.data.length}条)</option>
-                ))}
-              </select>
+                placeholder="不绑定"
+                options={[
+                  { value: '', label: '不绑定' },
+                  ...dataSources.map((ds) => ({ value: ds.id, label: `${ds.name} (${ds.data.length}条)` }))
+                ]}
+              />
               {dataSources.length === 0 && (
                 <div className="form-hint" style={{ marginTop: 6 }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -311,14 +353,14 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
             {boundDsId && (
               <div className="form-group">
                 <label className="form-label">抽样策略</label>
-                <select
-                  className="form-select"
+                <Select
                   value={samplingStr}
-                  onChange={(e) => setSamplingStr(e.target.value as 'random' | 'sequential')}
-                >
-                  <option value="random">随机抽取</option>
-                  <option value="sequential">顺序循环</option>
-                </select>
+                  onChange={(val) => setSamplingStr(val as 'random' | 'sequential')}
+                  options={[
+                    { value: 'random', label: '随机抽取' },
+                    { value: 'sequential', label: '顺序循环' }
+                  ]}
+                />
               </div>
             )}
           </>

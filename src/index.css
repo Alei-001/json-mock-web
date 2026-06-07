@@ -54,25 +54,59 @@ body {
   height: 100vh;
 }
 
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
 /* ─── Layout ─── */
 
 .main {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
   height: calc(100vh - var(--topbar-h));
 }
 
 .panel-left,
 .panel-right {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  background: var(--border);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .panel-left {
   border-right: 1px solid var(--border);
+}
+
+@media (max-width: 860px) {
+  body {
+    overflow-y: auto;
+  }
+
+  #root {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    height: auto;
+  }
+
+  .panel-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    height: 85vh;
+    min-height: unset;
+  }
+
+  .panel-right {
+    height: 85vh;
+    min-height: unset;
+  }
 }
 
 .card {
@@ -80,6 +114,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 100%;
 }
 
 .card-editor {
@@ -88,11 +123,6 @@ body {
 
 .card-preview {
   flex: 1;
-}
-
-.card-actions {
-  height: 56px;
-  flex-shrink: 0;
 }
 
 /* ─── Shared: Buttons ─── */
@@ -247,48 +277,18 @@ body {
   gap: 8px;
 }
 
-/* ─── Shared: Generation Inputs ─── */
+@media (max-width: 640px) {
+  .card-header {
+    padding: 0 12px;
+  }
 
-.gen-input {
-  width: 56px;
-  height: 30px;
-  padding: 0 6px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-family: var(--font-mono);
-  color: var(--ink);
-  background: var(--bg);
-  outline: none;
-  text-align: left;
-}
+  .card-actions-header .btn-sm span {
+    display: none;
+  }
 
-.gen-input:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px var(--primary-20);
-}
-
-.gen-input.wide {
-  width: 84px;
-}
-
-.gen-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-secondary);
-  white-space: nowrap;
-}
-
-.gen-field {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.gen-seed-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  .card-actions-header {
+    gap: 4px;
+  }
 }
 
 /* ─── Shared: Form Elements ─── */

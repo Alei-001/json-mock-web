@@ -38,6 +38,10 @@ export const STRATEGY_REGISTRY: StrategyInfo[] = [
 
   // boolean
   { id: 'random',      fakerPath: 'datatype.boolean',     label: '随机',      fieldTypes: ['boolean'] },
+  { id: 'alwaysTrue',  fakerPath: 'datatype.boolean',     label: '总是 true',  fieldTypes: ['boolean'] },
+  { id: 'alwaysFalse', fakerPath: 'datatype.boolean',     label: '总是 false', fieldTypes: ['boolean'] },
+  { id: 'mostlyTrue',  fakerPath: 'datatype.boolean',     label: '偏向 true',  fieldTypes: ['boolean'] },
+  { id: 'mostlyFalse', fakerPath: 'datatype.boolean',     label: '偏向 false', fieldTypes: ['boolean'] },
 
   // custom
   { id: 'custom',      fakerPath: '',                     label: '自定义',    fieldTypes: ['string', 'number', 'integer'], isCustom: true },

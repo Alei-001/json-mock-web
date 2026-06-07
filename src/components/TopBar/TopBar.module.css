@@ -94,8 +94,40 @@
   color: var(--primary);
 }
 
+.nav-label {
+  white-space: nowrap;
+}
+
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 12px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .nav-label {
+    display: none;
+  }
+
+  .nav-btn {
+    padding: 6px;
+  }
+
+  .topbar-left {
+    gap: 16px;
+  }
+
+  .btn-label {
+    display: none;
+  }
 }

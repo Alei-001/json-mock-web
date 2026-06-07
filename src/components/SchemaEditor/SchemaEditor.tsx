@@ -1,10 +1,13 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import styles from './SchemaEditor.module.css'
 import TextEditor from './TextEditor'
+import PromptDialog from '../PromptDialog/PromptDialog'
 import { useProjectStore } from '../../store/useProjectStore'
 import { schemaFieldToJsonSchema } from '../../utils/schemaConverter'
 import { downloadJson } from '../../utils/export'
-import type { SchemaField, FieldType } from '../../types'
+import { getStrategyById } from '../../constants/strategies'
+import type { SchemaField, FieldType, FieldConfig, DataSource, Binding } from '../../types'
+import { MAX_GENERATE_COUNT } from '../../types'
 
 /* ─── Type Icons ─── */
 
@@ -55,6 +58,7 @@ interface TreeNodeProps {
   depth: number
   selected: boolean
   isRoot: boolean
+  configTags: string[]
   onSelect: (id: string) => void
   onEdit: (id: string) => void
   onToggle: (id: string) => void
@@ -62,7 +66,7 @@ interface TreeNodeProps {
   onRemove: (id: string) => void
 }
 
-function TreeNode({ field, depth, selected, isRoot, onSelect, onEdit, onToggle, onAdd, onRemove }: TreeNodeProps) {
+function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit, onToggle, onAdd, onRemove }: TreeNodeProps) {
   const expandable = field.type === 'object' || field.type === 'array'
   const expanded = !field.collapsed
   const indent = 8 + depth * 24
@@ -135,6 +139,13 @@ function TreeNode({ field, depth, selected, isRoot, onSelect, onEdit, onToggle, 
 
       <span className={styles.treeName}>{field.name}</span>
       <span className={styles.treeTypeBadge}>{field.type}</span>
+      {configTags.length > 0 && (
+        <span className={styles.treeTags}>
+          {configTags.map((tag, i) => (
+            <span key={i} className={styles.treeTag}>{tag}</span>
+          ))}
+        </span>
+      )}
 
       <div className={styles.treeActions}>
         <button
@@ -185,6 +196,52 @@ function TreeNode({ field, depth, selected, isRoot, onSelect, onEdit, onToggle, 
   )
 }
 
+function computeConfigTags(
+  field: SchemaField,
+  fieldConfigs: Record<string, FieldConfig>,
+  bindings: Record<string, Binding>,
+  dataSources: DataSource[],
+): string[] {
+  const tags: string[] = []
+  const config = fieldConfigs[field.id]
+
+  if (config?.fakerType) {
+    const info = getStrategyById(config.fakerType)
+    if (info) tags.push(info.label)
+  }
+
+  if (config?.nullProbability && config.nullProbability > 0) {
+    tags.push(`null ${config.nullProbability}%`)
+  }
+
+  if (config?.constraints) {
+    const c = config.constraints
+    if (field.type === 'string') {
+      if (c.minLength != null && c.maxLength != null) tags.push(`${c.minLength}~${c.maxLength}`)
+      else if (c.minLength != null) tags.push(`≥${c.minLength}`)
+      else if (c.maxLength != null) tags.push(`≤${c.maxLength}`)
+    }
+    if (field.type === 'number' || field.type === 'integer') {
+      if (c.minimum != null && c.maximum != null) tags.push(`${c.minimum}~${c.maximum}`)
+      else if (c.minimum != null) tags.push(`≥${c.minimum}`)
+      else if (c.maximum != null) tags.push(`≤${c.maximum}`)
+    }
+    if (field.type === 'array') {
+      if (c.minItems != null && c.maxItems != null) tags.push(`${c.minItems}~${c.maxItems}项`)
+      else if (c.minItems != null) tags.push(`≥${c.minItems}项`)
+      else if (c.maxItems != null) tags.push(`≤${c.maxItems}项`)
+    }
+  }
+
+  const binding = bindings[field.id]
+  if (binding) {
+    const ds = dataSources.find((d) => d.id === binding.dataSourceId)
+    if (ds) tags.push(`⚓ ${ds.name}`)
+  }
+
+  return tags
+}
+
 /* ─── Tree Render ─── */
 
 function renderTreeNodes(
@@ -196,10 +253,15 @@ function renderTreeNodes(
   onToggle: (id: string) => void,
   onAdd: (parentId: string) => void,
   onRemove: (id: string) => void,
+  fieldConfigs: Record<string, FieldConfig>,
+  bindings: Record<string, Binding>,
+  dataSources: DataSource[],
 ): React.ReactNode[] {
   const nodes: React.ReactNode[] = []
   const expandable = field.type === 'object' || field.type === 'array'
   const expanded = !field.collapsed
+
+  const configTags = computeConfigTags(field, fieldConfigs, bindings, dataSources)
 
   nodes.push(
     <TreeNode
@@ -208,6 +270,7 @@ function renderTreeNodes(
       depth={depth}
       selected={selectedFieldId === field.id}
       isRoot={depth === 0}
+      configTags={configTags}
       onSelect={onSelect}
       onEdit={onEdit}
       onToggle={onToggle}
@@ -219,11 +282,11 @@ function renderTreeNodes(
   if (expandable && expanded) {
     if (field.children) {
       for (const child of field.children) {
-        nodes.push(...renderTreeNodes(child, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove))
+        nodes.push(...renderTreeNodes(child, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove, fieldConfigs, bindings, dataSources))
       }
     }
     if (field.type === 'array' && field.items) {
-      nodes.push(...renderTreeNodes(field.items, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove))
+      nodes.push(...renderTreeNodes(field.items, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove, fieldConfigs, bindings, dataSources))
     }
   }
 
@@ -234,10 +297,51 @@ interface SchemaEditorProps {
   onEditField: (id: string) => void
 }
 
+const GEN_FOOTER_MIN = 120
+const GEN_FOOTER_MAX = 400
+const GEN_FOOTER_DEFAULT = 180
+
 export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const [activeTab, setActiveTab] = useState<'visual' | 'text'>('visual')
   const [editorText, setEditorText] = useState('')
   const [parseError, setParseError] = useState<string | null>(null)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [footerHeight, setFooterHeight] = useState(GEN_FOOTER_DEFAULT)
+  const [exportOpen, setExportOpen] = useState(false)
+  const footerRef = useRef<HTMLDivElement>(null)
+  const dragging = useRef(false)
+  const startY = useRef(0)
+  const startH = useRef(0)
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    dragging.current = true
+    startY.current = e.clientY
+    startH.current = footerHeight
+    document.body.style.cursor = 'ns-resize'
+    document.body.style.userSelect = 'none'
+  }, [footerHeight])
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return
+      const delta = startY.current - e.clientY
+      const next = Math.min(GEN_FOOTER_MAX, Math.max(GEN_FOOTER_MIN, startH.current + delta))
+      setFooterHeight(next)
+    }
+    const onMouseUp = () => {
+      if (!dragging.current) return
+      dragging.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [])
 
   const schema = useProjectStore((s) => s.schema)
   const fieldConfigs = useProjectStore((s) => s.fieldConfigs)
@@ -248,6 +352,15 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const removeField = useProjectStore((s) => s.removeField)
   const clearSchema = useProjectStore((s) => s.clearSchema)
   const importJsonSchema = useProjectStore((s) => s.importJsonSchema)
+  const generationConfig = useProjectStore((s) => s.generationConfig)
+  const updateGenerationConfig = useProjectStore((s) => s.updateGenerationConfig)
+  const generate = useProjectStore((s) => s.generate)
+  const showToast = useProjectStore((s) => s.showToast)
+
+  const handleCountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value)
+    updateGenerationConfig({ count: Math.max(1, isNaN(v) ? 1 : v) })
+  }, [updateGenerationConfig])
 
   const handleSelect = (id: string) => {
     selectField(id)
@@ -282,9 +395,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   }, [importJsonSchema])
 
   const handleExport = useCallback(() => {
+    setExportOpen(true)
+  }, [])
+
+  const handleExportConfirm = useCallback((filename: string) => {
     const jsonSchema = schemaFieldToJsonSchema(schema, fieldConfigs)
-    downloadJson(jsonSchema, 'schema.json')
-  }, [schema, fieldConfigs])
+    downloadJson(jsonSchema, filename)
+    showToast('已导出模板')
+  }, [schema, fieldConfigs, showToast])
 
   const handleClear = useCallback(() => {
     clearSchema()
@@ -293,7 +411,8 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
       const empty = JSON.stringify({ type: 'object', $schema: 'http://json-schema.org/draft-07/schema#' }, null, 2)
       setEditorText(empty)
     }
-  }, [clearSchema, selectField, activeTab])
+    showToast('已清空')
+  }, [clearSchema, selectField, activeTab, showToast])
 
   const nodes = renderTreeNodes(
     schema,
@@ -304,6 +423,9 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     toggleFieldCollapsed,
     addField,
     removeField,
+    fieldConfigs,
+    useProjectStore.getState().bindings,
+    useProjectStore.getState().dataSources,
   )
 
   return (
@@ -319,8 +441,17 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
               <button className={`tab ${activeTab === 'text' ? 'active' : ''}`} onClick={() => handleTabChange('text')}>
                 文本
               </button>
-            </div>
-          </div>
+</div>
+      <PromptDialog
+        open={exportOpen}
+        title="导出模板"
+        label="文件名"
+        defaultValue="schema"
+        suffix=".json"
+        onConfirm={handleExportConfirm}
+        onClose={() => setExportOpen(false)}
+      />
+    </div>
           <div className="card-actions-header">
             {activeTab === 'visual' && (
               <>
@@ -377,6 +508,70 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
             )}
           </>
         )}
+
+        <div className={styles.genFooter} ref={footerRef} style={{ height: footerHeight }}>
+          <div className={styles.genHandle} onMouseDown={handleDragStart} />
+          <div className={styles.genSection}>
+            {/* 生成数量 */}
+            <div className={styles.genField}>
+              <div className={styles.genLabelRow}>
+                <label className={styles.genLabel}>生成数量</label>
+                {generationConfig.count > MAX_GENERATE_COUNT && (
+                  <span className={styles.genWarn}>最多 {MAX_GENERATE_COUNT} 条</span>
+                )}
+              </div>
+              <input
+                type="number"
+                className="form-input"
+                value={generationConfig.count}
+                min={1}
+                max={MAX_GENERATE_COUNT}
+                onChange={handleCountChange}
+              />
+            </div>
+
+            {/* 高级选项折叠 */}
+            <button
+              className={styles.genToggle}
+              onClick={() => setAdvancedOpen(!advancedOpen)}
+            >
+              <svg
+                className={`${styles.genToggleIcon} ${advancedOpen ? styles.genToggleOpen : ''}`}
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+              <span>高级选项</span>
+            </button>
+
+            {/* 高级选项内容 */}
+            {advancedOpen && (
+              <div className={styles.genAdvanced}>
+                <div className={styles.genField}>
+                  <label className={styles.genLabel}>随机种子</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="可选，用于复现相同数据"
+                    value={generationConfig.seed}
+                    onChange={(e) => updateGenerationConfig({ seed: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 重新生成按钮 */}
+          <div className={styles.genAction}>
+            <button className="btn-sm primary" onClick={generate}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+              </svg>
+              重新生成
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

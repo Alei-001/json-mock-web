@@ -1,5 +1,7 @@
 export type FieldType = 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null'
 
+export const MAX_GENERATE_COUNT = 100
+
 export interface SchemaField {
   id: string
   name: string
@@ -21,6 +23,8 @@ export interface FieldConfig {
     maxLength?: number
     minimum?: number
     maximum?: number
+    minItems?: number
+    maxItems?: number
     pattern?: string
     enum?: unknown[]
   }

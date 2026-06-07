@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { SchemaField, FieldConfig, GenerationConfig, FieldType, DataSource } from '../types'
+import type { SchemaField, FieldConfig, GenerationConfig, FieldType, DataSource, Binding } from '../types'
+import { MAX_GENERATE_COUNT } from '../types'
 import { demoSchema, demoFieldConfigs, demoGenerationConfig } from '../constants/demoSchema'
 import { generateData } from '../utils/generator'
 import { jsonSchemaToSchemaField } from '../utils/schemaConverter'
@@ -61,7 +62,8 @@ interface ProjectState {
   generationConfig: GenerationConfig
   generatedData: unknown
   dataSources: DataSource[]
-  bindings: Record<string, string>
+  bindings: Record<string, Binding>
+  toastMessage: string | null
 
   selectField: (id: string | null) => void
   toggleFieldCollapsed: (id: string) => void
@@ -78,6 +80,7 @@ interface ProjectState {
   removeDataSource: (id: string) => void
   bindField: (fieldId: string, dataSourceId: string, strategy: 'random' | 'sequential') => void
   unbindField: (fieldId: string) => void
+  showToast: (message: string) => void
 }
 
 export const useProjectStore = create<ProjectState>()(
@@ -90,6 +93,7 @@ export const useProjectStore = create<ProjectState>()(
       generatedData: null,
       dataSources: [],
       bindings: {},
+      toastMessage: null,
 
   selectField: (id) => {
     set({ selectedFieldId: id })
@@ -175,7 +179,11 @@ export const useProjectStore = create<ProjectState>()(
 
   updateGenerationConfig: (config) => {
     set((state) => ({
-      generationConfig: { ...state.generationConfig, ...config },
+      generationConfig: {
+        ...state.generationConfig,
+        ...config,
+        ...(config.count !== undefined ? { count: Math.min(MAX_GENERATE_COUNT, Math.max(1, config.count)) } : {}),
+      },
     }))
   },
 
@@ -232,14 +240,14 @@ export const useProjectStore = create<ProjectState>()(
     set((state) => ({
       dataSources: state.dataSources.filter((d) => d.id !== id),
       bindings: Object.fromEntries(
-        Object.entries(state.bindings).filter(([, dsId]) => dsId !== id),
+        Object.entries(state.bindings).filter(([, b]) => b.dataSourceId !== id),
       ),
     }))
   },
 
   bindField: (fieldId, dataSourceId, strategy) => {
     set((state) => ({
-      bindings: { ...state.bindings, [fieldId]: `${dataSourceId}:${strategy}` },
+      bindings: { ...state.bindings, [fieldId]: { dataSourceId, strategy } },
     }))
   },
 
@@ -249,6 +257,13 @@ export const useProjectStore = create<ProjectState>()(
       delete bindings[fieldId]
       return { bindings }
     })
+  },
+
+  showToast: (message) => {
+    set({ toastMessage: message })
+    setTimeout(() => {
+      set({ toastMessage: null })
+    }, 2000)
   },
 }),
 {
@@ -260,6 +275,11 @@ export const useProjectStore = create<ProjectState>()(
       dataSources: state.dataSources,
       bindings: state.bindings,
     }),
+  onRehydrateStorage: () => (state) => {
+      if (state && state.generationConfig.count > MAX_GENERATE_COUNT) {
+        state.generationConfig.count = MAX_GENERATE_COUNT
+      }
+    },
   },
   ),
 )

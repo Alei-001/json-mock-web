@@ -11,12 +11,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 0 0 12px 0;
   flex-shrink: 0;
 }
 
-.import-bar .spacer {
+.spacer {
   flex: 1;
 }
 

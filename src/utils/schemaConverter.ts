@@ -67,8 +67,15 @@ function fieldToJsonSchema(field: SchemaField, configs: Record<string, FieldConf
       if (field.items) {
         schema.items = fieldToJsonSchema(field.items, configs)
       }
+      if (config?.constraints?.minItems != null) schema.minItems = config.constraints.minItems
+      if (config?.constraints?.maxItems != null) schema.maxItems = config.constraints.maxItems
+      if (config?.fakerType) schema['x-faker'] = config.fakerType
       break
     }
+  }
+
+  if (config?.nullProbability != null && config.nullProbability > 0) {
+    schema['x-null-probability'] = config.nullProbability
   }
 
   if (field.description) {
@@ -104,6 +111,10 @@ function jsonSchemaToField(
     config.fakerType = schema['x-faker'] as string
   }
 
+  if (schema['x-null-probability'] != null) {
+    config.nullProbability = schema['x-null-probability'] as number
+  }
+
   if (normalizedType === 'string') {
     if (schema.minLength != null) config.constraints = { ...config.constraints, minLength: schema.minLength as number }
     if (schema.maxLength != null) config.constraints = { ...config.constraints, maxLength: schema.maxLength as number }
@@ -131,9 +142,16 @@ function jsonSchemaToField(
   }
 
   if (normalizedType === 'array' && schema.items) {
-    const itemResult = jsonSchemaToField(schema.items as JsonSchema, '[0]', id)
+    const itemResult = jsonSchemaToField(schema.items as JsonSchema, 'item', id)
     field.items = itemResult.field
     fieldConfigs = { ...fieldConfigs, ...itemResult.fieldConfigs }
+
+    if (schema.minItems != null || schema.maxItems != null) {
+      const c: NonNullable<FieldConfig['constraints']> = {}
+      if (schema.minItems != null) c.minItems = schema.minItems as number
+      if (schema.maxItems != null) c.maxItems = schema.maxItems as number
+      config.constraints = { ...config.constraints, ...c }
+    }
   }
 
   if (Object.keys(config).length > 0) {
