@@ -23,8 +23,8 @@
   },
   "schemaEditor": {
     "title": "Schema Editor",
-    "visual": "Visual",
-    "text": "Text",
+    "visual": "Tree",
+    "text": "JSON",
     "exportTemplate": "Export Template",
     "clear": "Clear",
     "editField": "Edit field",

@@ -23,8 +23,8 @@
   },
   "schemaEditor": {
     "title": "Schema 编辑器",
-    "visual": "可视化",
-    "text": "文本",
+    "visual": "树形",
+    "text": "JSON",
     "exportTemplate": "导出模板",
     "clear": "清空",
     "editField": "编辑字段",
