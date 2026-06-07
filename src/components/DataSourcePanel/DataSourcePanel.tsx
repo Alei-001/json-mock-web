@@ -7,9 +7,9 @@ import type { DataSource } from '../../types'
 function parseFile(name: string, text: string): { data: unknown[]; type: DataSource['type'] } {
   const ext = name.split('.').pop()?.toLowerCase()
 
-  if (ext === 'csv') {
+  if (ext === 'csv' || ext === 'tsv') {
     const result = Papa.parse(text, { header: true, skipEmptyLines: true })
-    return { data: result.data, type: 'csv' }
+    return { data: result.data, type: ext === 'tsv' ? 'csv' : 'csv' }
   }
 
   if (ext === 'json') {
@@ -77,6 +77,8 @@ export default function DataSourcePanel() {
 
   const previewDs = previewIndex !== null ? dataSources[previewIndex] : null
 
+  const jsonExample = '["值1","值2"]  或  [\u007B"name":"Alice"\u007D,...]'
+
   return (
     <div className={styles.dataSourcePanel}>
       <div className={styles.importBar}>
@@ -106,7 +108,16 @@ export default function DataSourcePanel() {
             <polyline points="13 2 13 9 20 9" />
           </svg>
           <span>暂无数据源</span>
-          <span style={{ fontSize: 11, opacity: 0.6 }}>支持 JSON / CSV / TXT 文件</span>
+          <span style={{ fontSize: 11, opacity: 0.6 }}>支持 JSON / CSV / TXT / TSV 文件</span>
+<div style={{ margin: '16px 0 0', textAlign: 'left', fontSize: 11, color: 'var(--muted)', lineHeight: 1.8 }}>
+            <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--ink-secondary)' }}>格式要求</div>
+            <div><span style={{ fontWeight: 500 }}>JSON</span> — 数组格式，每个元素为一个值或对象</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 6px' }}>{jsonExample}</div>
+            <div><span style={{ fontWeight: 500 }}>CSV / TSV</span> — 首行为表头，每行一条记录</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 6px' }}>name,email<br/>Alice,a@b.com</div>
+            <div><span style={{ fontWeight: 500 }}>TXT</span> — 每行一个值</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 0' }}>值1<br/>值2<br/>值3</div>
+          </div>
         </div>
       ) : (
         <div className={styles.dsList}>

@@ -92,6 +92,9 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
     if (info?.isCustom) {
       setMinValue('')
       setMaxValue('')
+    } else {
+      setBoundDsId('')
+      setSamplingStr('random')
     }
   }
 
@@ -147,7 +150,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
     updateFieldConfig(fieldId, configUpdate)
 
-    if (boundDsId) {
+    if (isCustom && boundDsId) {
       bindField(fieldId, boundDsId, samplingStr)
     } else {
       unbindField(fieldId)
@@ -325,7 +328,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
           </div>
         )}
 
-        {(isCustom || dataSources.length > 0) && (
+        {isCustom && (
           <>
             <div className="form-group full-width">
               <label className="form-label">数据源</label>

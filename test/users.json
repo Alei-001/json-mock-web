@@ -1,0 +1,7 @@
+[
+  {"name":"张三","email":"zhangsan@example.com","age":28,"city":"北京"},
+  {"name":"李四","email":"lisi@example.com","age":35,"city":"上海"},
+  {"name":"王五","email":"wangwu@example.com","age":22,"city":"广州"},
+  {"name":"赵六","email":"zhaoliu@example.com","age":31,"city":"深圳"},
+  {"name":"孙七","email":"sunqi@example.com","age":27,"city":"杭州"}
+]

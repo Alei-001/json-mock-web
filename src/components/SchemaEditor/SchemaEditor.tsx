@@ -299,7 +299,7 @@ interface SchemaEditorProps {
 
 const GEN_FOOTER_MIN = 120
 const GEN_FOOTER_MAX = 400
-const GEN_FOOTER_DEFAULT = 180
+const GEN_FOOTER_DEFAULT = 200
 
 export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const [activeTab, setActiveTab] = useState<'visual' | 'text'>('visual')
