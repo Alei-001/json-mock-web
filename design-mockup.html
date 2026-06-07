@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON Mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+
+:root {
+  --primary: oklch(0.450 0.150 20.0);
+  --primary-hover: oklch(0.400 0.150 20.0);
+  --primary-10: oklch(0.450 0.150 20.0 / 0.10);
+  --primary-20: oklch(0.450 0.150 20.0 / 0.20);
+
+  --bg: oklch(1.000 0.000 0);
+  --surface: oklch(0.975 0.003 20.0);
+  --surface-raised: oklch(0.955 0.005 20.0);
+  --editor-bg: oklch(0.980 0.002 20.0);
+
+  --ink: oklch(0.150 0.010 20.0);
+  --ink-secondary: oklch(0.420 0.012 20.0);
+  --muted: oklch(0.550 0.010 20.0);
+
+  --border: oklch(0.900 0.005 20.0);
+  --border-focus: oklch(0.450 0.150 20.0);
+
+  --accent: oklch(0.520 0.110 185.0);
+  --accent-hover: oklch(0.470 0.110 185.0);
+  --success: oklch(0.550 0.140 145.0);
+  --warning: oklch(0.700 0.140 75.0);
+  --error: oklch(0.500 0.170 25.0);
+
+  --shadow-sm: 0 1px 2px oklch(0.000 0 0 / 0.05);
+  --shadow-md: 0 2px 8px oklch(0.000 0 0 / 0.08);
+  --shadow-lg: 0 4px 16px oklch(0.000 0 0 / 0.10);
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --topbar-h: 56px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ═══════════════════════════════════════════
+   TOPBAR
+   ═══════════════════════════════════════════ */
+
+.topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: relative;
+  z-index: 200;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-mark svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 150ms ease-out;
+}
+
+.nav-btn:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.nav-btn.active {
+  background: var(--primary-10);
+  color: var(--primary);
+}
+
+.nav-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.nav-btn.active svg {
+  opacity: 1;
+  color: var(--primary);
+}
+
+.nav-btn svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.btn-primary svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ═══════════════════════════════════════════
+   MAIN LAYOUT
+   ═══════════════════════════════════════════ */
+
+.main {
+  display: flex;
+  height: calc(100vh - var(--topbar-h));
+}
+
+.panel-left,
+.panel-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+}
+
+.panel-left {
+  border-right: 1px solid var(--border);
+}
+
+.card {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.card-editor {
+  flex: 1;
+}
+
+.card-preview {
+  flex: 1;
+}
+
+.card-actions {
+  height: 56px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   CARD HEADER
+   ═══════════════════════════════════════════ */
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 46px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.card-subtitle {
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+
+.card-actions-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════ */
+
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.tab {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 150ms ease-out;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -1px;
+}
+
+.tab.active {
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════
+   SCHEMA TREE
+   ═══════════════════════════════════════════ */
+
+.tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  cursor: pointer;
+  transition: background 100ms ease-out;
+  position: relative;
+  min-height: 32px;
+  border-radius: 4px;
+}
+
+.tree-node.tree-depth-0 { padding-left: 16px; }
+.tree-node.tree-depth-1 { padding-left: 40px; }
+.tree-node.tree-depth-2 { padding-left: 64px; }
+
+.tree-node:hover {
+  background: var(--surface);
+}
+
+.tree-node:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--border-focus);
+}
+
+.tree-node.selected {
+  background: var(--primary-10);
+}
+
+.tree-node.selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--primary);
+  border-radius: 1px;
+}
+
+.tree-indent {
+  flex-shrink: 0;
+}
+
+.tree-toggle {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 150ms ease-out;
+}
+
+.tree-toggle.expanded {
+  transform: rotate(90deg);
+}
+
+.tree-toggle svg {
+  width: 12px;
+  height: 12px;
+}
+
+.tree-toggle-placeholder {
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.tree-type-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tree-type-icon svg {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-secondary);
+}
+
+.tree-type-icon.type-object svg,
+.tree-type-icon.type-array svg {
+  color: var(--accent);
+}
+
+.tree-name {
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  font-weight: 400;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-node.required .tree-name {
+  font-weight: 600;
+}
+
+.tree-type-badge {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  padding: 1px 6px;
+  background: var(--surface);
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.tree-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 100ms ease-out;
+}
+
+.tree-node:hover .tree-actions {
+  opacity: 1;
+}
+
+.tree-actions:focus-within {
+  opacity: 1;
+}
+
+.tree-action-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 100ms ease-out, color 100ms ease-out;
+}
+
+.tree-action-btn:hover {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+
+.tree-action-btn.danger:hover {
+  background: var(--error);
+  color: white;
+}
+
+.tree-action-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 0;
+}
+
+.tree-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.add-field-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  margin: 4px 0;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 150ms ease-out;
+  width: 100%;
+  text-align: left;
+}
+
+.add-field-btn.tree-depth-0 { padding-left: 16px; }
+.add-field-btn.tree-depth-1 { padding-left: 40px; }
+.add-field-btn.tree-depth-2 { padding-left: 64px; }
+
+.add-field-btn:hover {
+  color: var(--primary);
+  background: var(--primary-10);
+}
+
+.add-field-btn:focus-visible {
+  color: var(--primary);
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.add-field-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ═══════════════════════════════════════════
+   GENERATION CONTROLS
+   ═══════════════════════════════════════════ */
+
+.gen-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 46px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.gen-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gen-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+}
+
+.gen-input {
+  width: 56px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+  text-align: left;
+}
+
+.gen-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--primary-20);
+}
+
+.gen-input.wide {
+  width: 84px;
+}
+
+.gen-seed-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-sm {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 150ms ease-out;
+  white-space: nowrap;
+}
+
+.btn-sm:hover {
+  background: var(--surface);
+  border-color: var(--ink-secondary);
+}
+
+.btn-sm:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.btn-sm.primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-sm.primary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.btn-sm svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-sm.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.btn-sm.primary:hover {
+  background: var(--primary-hover);
+}
+
+.gen-spacer {
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════
+   JSON PREVIEW
+   ═══════════════════════════════════════════ */
+
+.json-preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  background: var(--editor-bg);
+}
+
+.json-line {
+  display: flex;
+  min-height: 22px;
+}
+
+.json-line-num {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 12px;
+  color: var(--muted);
+  user-select: none;
+  font-size: 11px;
+  line-height: 1.7;
+  opacity: 0.6;
+}
+
+.json-content {
+  flex: 1;
+  min-width: 0;
+  white-space: pre;
+}
+
+/* Syntax colors */
+.json-key { color: var(--ink); }
+.json-string { color: var(--accent); }
+.json-number { color: var(--primary); }
+.json-boolean { color: var(--accent); }
+.json-null { color: var(--muted); }
+.json-bracket { color: var(--ink-secondary); }
+.json-colon { color: var(--muted); }
+.json-comma { color: var(--muted); }
+
+/* ═══════════════════════════════════════════
+   ACTION BAR
+   ═══════════════════════════════════════════ */
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+/* ═══════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: oklch(0.000 0 0 / 0.40);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-out;
+  z-index: 300;
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: 560px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+  z-index: 400;
+}
+
+.modal.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  font-family: var(--font-mono);
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.modal-close:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.modal-close:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 0;
+}
+
+.modal-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Form grid inside modal */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+}
+
+.form-input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  transition: border-color 150ms ease-out;
+  outline: none;
+  width: 100%;
+}
+
+.form-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--primary-20);
+}
+
+.form-input:focus-visible {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--primary-20);
+}
+
+.form-input.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.form-select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  width: 100%;
+}
+
+.form-select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--primary-20);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+}
+
+.toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 150ms ease-out;
+  flex-shrink: 0;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 150ms ease-out;
+}
+
+.toggle.active {
+  background: var(--primary);
+}
+
+.toggle.active::after {
+  transform: translateX(16px);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.form-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.form-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.form-divider-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.form-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+}
+
+.form-hint svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════
+   TOAST NOTIFICATION
+   ═══════════════════════════════════════════ */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 600;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: all 200ms ease-out;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.toast svg {
+  width: 16px;
+  height: 16px;
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* ═══════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     TOPBAR
+     ═══════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="javascript:void(0)" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7c0-1.7 1.3-3 3-3h10c1.7 0 3 1.3 3 3v10c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3z"/>
+          <path d="M9 10h6"/>
+          <path d="M12 7v6"/>
+        </svg>
+      </div>
+      <span class="logo-text">JSON Mock</span>
+    </a>
+
+    <nav class="topbar-nav">
+      <button class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        模板库
+      </button>
+      <button class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/>
+          <path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>
+        </svg>
+        数据源
+      </button>
+      <button class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        项目
+      </button>
+    </nav>
+  </div>
+
+  <div class="topbar-right">
+    <button class="btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+      保存
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     MAIN LAYOUT
+     ═══════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- ─── LEFT PANEL ─── -->
+  <div class="panel-left">
+
+    <!-- Editor Card -->
+    <div class="card card-editor">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="card-title">Schema 编辑器</span>
+          <div class="tabs">
+            <button class="tab active" data-tab="visual">可视化</button>
+            <button class="tab" data-tab="text">文本</button>
+          </div>
+        </div>
+        <div class="card-actions-header">
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导入模板
+          </button>
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            导出模板
+          </button>
+        </div>
+      </div>
+
+      <div class="tree">
+        <!-- Root object -->
+        <div class="tree-node tree-depth-0">
+          <div class="tree-toggle expanded">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="tree-type-icon type-object">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7c0-1.7 1.3-3 3-3h10c1.7 0 3 1.3 3 3v10c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3z"/><path d="M9 10h6"/><path d="M12 7v6"/></svg>
+          </div>
+          <span class="tree-name">root</span>
+          <span class="tree-type-badge">object</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- name -->
+        <div class="tree-node required tree-depth-1">
+          <div class="tree-toggle-placeholder"></div>
+          <div class="tree-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+          </div>
+          <span class="tree-name">name</span>
+          <span class="tree-type-badge">string</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- age -->
+        <div class="tree-node required tree-depth-1">
+          <div class="tree-toggle-placeholder"></div>
+          <div class="tree-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+          </div>
+          <span class="tree-name">age</span>
+          <span class="tree-type-badge">integer</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- email (selected) -->
+        <div class="tree-node selected required tree-depth-1">
+          <div class="tree-toggle-placeholder"></div>
+          <div class="tree-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+          </div>
+          <span class="tree-name">email</span>
+          <span class="tree-type-badge">string</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- address (object, collapsed) -->
+        <div class="tree-node tree-depth-1">
+          <div class="tree-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="tree-type-icon type-object">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7c0-1.7 1.3-3 3-3h10c1.7 0 3 1.3 3 3v10c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3z"/><path d="M9 10h6"/><path d="M12 7v6"/></svg>
+          </div>
+          <span class="tree-name">address</span>
+          <span class="tree-type-badge">object</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- tags (array, expanded) -->
+        <div class="tree-node tree-depth-1">
+          <div class="tree-toggle expanded">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="tree-type-icon type-array">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M4 17v3h16v-3"/><path d="M4 12h16"/></svg>
+          </div>
+          <span class="tree-name">tags</span>
+          <span class="tree-type-badge">array</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- tags[0] -->
+        <div class="tree-node tree-depth-2">
+          <div class="tree-toggle-placeholder"></div>
+          <div class="tree-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+          </div>
+          <span class="tree-name">[0]</span>
+          <span class="tree-type-badge">string</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- isActive -->
+        <div class="tree-node tree-depth-1">
+          <div class="tree-toggle-placeholder"></div>
+          <div class="tree-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <span class="tree-name">isActive</span>
+          <span class="tree-type-badge">boolean</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- createdAt -->
+        <div class="tree-node tree-depth-1">
+          <div class="tree-toggle-placeholder"></div>
+          <div class="tree-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+          </div>
+          <span class="tree-name">createdAt</span>
+          <span class="tree-type-badge">string</span>
+          <div class="tree-actions">
+            <button class="tree-action-btn" title="添加字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tree-action-btn danger" title="删除字段">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add field button -->
+        <button class="add-field-btn tree-depth-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          添加字段
+        </button>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- ─── RIGHT PANEL ─── -->
+  <div class="panel-right">
+
+    <!-- Preview Card -->
+    <div class="card card-preview">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="card-title">数据预览</span>
+          <div class="tabs">
+            <button class="tab active" data-tab="json-view">JSON</button>
+            <button class="tab" data-tab="table-view">表格</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gen-controls">
+        <div class="gen-field">
+          <span class="gen-label">数量</span>
+          <input type="number" class="gen-input" value="1" min="1" max="1000">
+        </div>
+        <div class="gen-seed-group">
+          <span class="gen-label">种子</span>
+          <input type="text" class="gen-input wide" placeholder="可选">
+        </div>
+        <div class="gen-spacer"></div>
+        <button class="btn-sm primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          重新生成
+        </button>
+      </div>
+
+      <div class="json-preview">
+        <div class="json-line">
+          <span class="json-line-num">1</span>
+          <span class="json-content"><span class="json-bracket">{</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">2</span>
+          <span class="json-content">  <span class="json-key">"name"</span><span class="json-colon">: </span><span class="json-string">"张伟"</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">3</span>
+          <span class="json-content">  <span class="json-key">"age"</span><span class="json-colon">: </span><span class="json-number">28</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">4</span>
+          <span class="json-content">  <span class="json-key">"email"</span><span class="json-colon">: </span><span class="json-string">"zhangwei@example.com"</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">5</span>
+          <span class="json-content">  <span class="json-key">"address"</span><span class="json-colon">: </span><span class="json-bracket">{</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">6</span>
+          <span class="json-content">    <span class="json-key">"street"</span><span class="json-colon">: </span><span class="json-string">"长安街 100 号"</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">7</span>
+          <span class="json-content">    <span class="json-key">"city"</span><span class="json-colon">: </span><span class="json-string">"北京"</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">8</span>
+          <span class="json-content">    <span class="json-key">"zipCode"</span><span class="json-colon">: </span><span class="json-string">"100000"</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">9</span>
+          <span class="json-content">  <span class="json-bracket">}</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">10</span>
+          <span class="json-content">  <span class="json-key">"tags"</span><span class="json-colon">: </span><span class="json-bracket">[</span><span class="json-string">"developer"</span><span class="json-comma">, </span><span class="json-string">"designer"</span><span class="json-bracket">]</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">11</span>
+          <span class="json-content">  <span class="json-key">"isActive"</span><span class="json-colon">: </span><span class="json-boolean">true</span><span class="json-comma">,</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">12</span>
+          <span class="json-content">  <span class="json-key">"createdAt"</span><span class="json-colon">: </span><span class="json-string">"2024-03-15T08:30:00Z"</span></span>
+        </div>
+        <div class="json-line">
+          <span class="json-line-num">13</span>
+          <span class="json-content"><span class="json-bracket">}</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="card card-actions">
+      <div class="action-bar">
+        <button class="btn-sm primary" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          复制 JSON
+        </button>
+        <button class="btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下载 JSON
+        </button>
+        <button class="btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          下载 CSV
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Field Config -->
+<div class="modal-backdrop" id="fieldModalBackdrop"></div>
+<div class="modal" id="fieldModal" role="dialog" aria-labelledby="fieldModalTitle" aria-modal="true">
+  <div class="modal-header">
+    <div class="modal-title-group">
+      <h3 class="modal-title" id="fieldModalTitle">字段配置</h3>
+      <span class="modal-subtitle" id="fieldModalSubtitle">email</span>
+    </div>
+    <button class="modal-close" id="fieldModalClose" aria-label="关闭">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <div class="toggle-row">
+          <span class="toggle-label">必填</span>
+          <button class="toggle active" id="modalRequiredToggle" aria-label="切换必填状态"></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Faker 类型</label>
+        <select class="form-select">
+          <option>internet.email</option>
+          <option>person.fullName</option>
+          <option>phone.number</option>
+          <option>lorem.sentence</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">格式</label>
+        <select class="form-select">
+          <option>email</option>
+          <option>uri</option>
+          <option>date-time</option>
+          <option>uuid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">最小长度</label>
+        <input type="number" class="form-input" value="5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">最大长度</label>
+        <input type="number" class="form-input" value="254">
+      </div>
+      <div class="form-group full-width">
+        <label class="form-label">正则约束</label>
+        <input type="text" class="form-input mono" placeholder="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
+      </div>
+      <div class="form-group full-width">
+        <label class="form-label">自定义表达式</label>
+        <input type="text" class="form-input mono" placeholder="{{internet.email}}">
+      </div>
+      <div class="form-group full-width form-divider">
+        <div class="form-divider-line"></div>
+        <span class="form-divider-label">数据源绑定</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">绑定数据源</label>
+        <select class="form-select">
+          <option value="">未绑定（使用 Faker）</option>
+          <option value="users">用户列表 (120条)</option>
+          <option value="cities">城市数据 (50条)</option>
+          <option value="emails">邮箱库 (200条)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">抽样策略</label>
+        <select class="form-select">
+          <option>随机抽取</option>
+          <option>顺序循环</option>
+        </select>
+      </div>
+      <div class="form-group full-width">
+        <div class="form-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          绑定后，该字段的值将从数据源中抽取，而非 Faker 生成
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-sm" id="modalCancel">取消</button>
+    <button class="btn-sm primary" id="modalSave">保存</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  已复制到剪贴板
+</div>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tabs').forEach(tabGroup => {
+    tabGroup.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  });
+
+  // Modal
+  const modal = document.getElementById('fieldModal');
+  const modalBackdrop = document.getElementById('fieldModalBackdrop');
+  const modalClose = document.getElementById('fieldModalClose');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalSave = document.getElementById('modalSave');
+  const modalSubtitle = document.getElementById('fieldModalSubtitle');
+
+  function openModal(fieldName) {
+    modalSubtitle.textContent = fieldName || '字段';
+    modal.classList.add('open');
+    modalBackdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modalBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  modalClose.addEventListener('click', closeModal);
+  modalCancel.addEventListener('click', closeModal);
+  modalSave.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) {
+      closeModal();
+    }
+  });
+
+  // Tree node click → select + open modal
+  document.querySelectorAll('.tree-node').forEach(node => {
+    node.addEventListener('click', (e) => {
+      if (e.target.closest('.tree-actions') || e.target.closest('.tree-toggle')) return;
+      document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('selected'));
+      node.classList.add('selected');
+      const nameEl = node.querySelector('.tree-name');
+      openModal(nameEl ? nameEl.textContent : '字段');
+    });
+    node.setAttribute('tabindex', '0');
+    node.setAttribute('role', 'treeitem');
+    node.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        node.click();
+      }
+    });
+  });
+
+  // Tree toggle
+  document.querySelectorAll('.tree-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle.classList.toggle('expanded');
+    });
+  });
+
+  // Tree action buttons (don't trigger modal)
+  document.querySelectorAll('.tree-actions .tree-action-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  });
+
+  // Copy button
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('visible');
+    setTimeout(() => toast.classList.remove('visible'), 2000);
+  });
+
+  // Modal toggle switch
+  document.getElementById('modalRequiredToggle').addEventListener('click', function() {
+    this.classList.toggle('active');
+  });
+</script>
+</body>
+</html>
