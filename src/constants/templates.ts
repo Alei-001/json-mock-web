@@ -10,8 +10,8 @@ export interface PresetTemplate {
 
 const userTemplate: PresetTemplate = {
   id: 'user',
-  name: '用户',
-  description: '用户基础信息，含地址嵌套和标签数组',
+  name: 'templates.user',
+  description: 'templates.userDesc',
   schema: {
     id: 'root',
     name: 'root',
@@ -33,7 +33,7 @@ const userTemplate: PresetTemplate = {
       },
       {
         id: 'root.tags', name: 'tags', type: 'array', required: false, collapsed: false,
-        items: { id: 'root.tags[0]', name: '[0]', type: 'string', required: false },
+        items: { id: 'root.tags[0]', name: 'item', type: 'string', required: false },
       },
       { id: 'root.isActive', name: 'isActive', type: 'boolean', required: false },
       { id: 'root.createdAt', name: 'createdAt', type: 'string', required: false },
@@ -55,8 +55,8 @@ const userTemplate: PresetTemplate = {
 
 const orderTemplate: PresetTemplate = {
   id: 'order',
-  name: '订单',
-  description: '电商订单，含商品明细数组和金额',
+  name: 'templates.order',
+  description: 'templates.orderDesc',
   schema: {
     id: 'root',
     name: 'root',
@@ -69,7 +69,7 @@ const orderTemplate: PresetTemplate = {
       {
         id: 'root.items', name: 'items', type: 'array', required: false, collapsed: false,
         items: {
-          id: 'root.items[0]', name: '[0]', type: 'object', required: false,
+          id: 'root.items[0]', name: 'item', type: 'object', required: false,
           children: [
             { id: 'root.items[0].product', name: 'product', type: 'string', required: true },
             { id: 'root.items[0].quantity', name: 'quantity', type: 'integer', required: true },
@@ -95,8 +95,8 @@ const orderTemplate: PresetTemplate = {
 
 const productTemplate: PresetTemplate = {
   id: 'product',
-  name: '产品',
-  description: '商品信息，含分类、库存和评分',
+  name: 'templates.product',
+  description: 'templates.productDesc',
   schema: {
     id: 'root',
     name: 'root',
@@ -112,7 +112,7 @@ const productTemplate: PresetTemplate = {
       { id: 'root.inStock', name: 'inStock', type: 'boolean', required: false },
       {
         id: 'root.tags', name: 'tags', type: 'array', required: false, collapsed: false,
-        items: { id: 'root.tags[0]', name: '[0]', type: 'string', required: false },
+        items: { id: 'root.tags[0]', name: 'item', type: 'string', required: false },
       },
       { id: 'root.rating', name: 'rating', type: 'number', required: false },
     ],
@@ -130,8 +130,8 @@ const productTemplate: PresetTemplate = {
 
 const articleTemplate: PresetTemplate = {
   id: 'article',
-  name: '文章',
-  description: '博客文章，含标签数组和统计',
+  name: 'templates.article',
+  description: 'templates.articleDesc',
   schema: {
     id: 'root',
     name: 'root',
@@ -144,7 +144,7 @@ const articleTemplate: PresetTemplate = {
       { id: 'root.content', name: 'content', type: 'string', required: false },
       {
         id: 'root.tags', name: 'tags', type: 'array', required: false, collapsed: false,
-        items: { id: 'root.tags[0]', name: '[0]', type: 'string', required: false },
+        items: { id: 'root.tags[0]', name: 'item', type: 'string', required: false },
       },
       { id: 'root.publishedAt', name: 'publishedAt', type: 'string', required: false },
       { id: 'root.views', name: 'views', type: 'integer', required: false },
@@ -162,8 +162,8 @@ const articleTemplate: PresetTemplate = {
 
 const employeeTemplate: PresetTemplate = {
   id: 'employee',
-  name: '员工',
-  description: '员工信息，含部门和技能数组',
+  name: 'templates.employee',
+  description: 'templates.employeeDesc',
   schema: {
     id: 'root',
     name: 'root',
@@ -178,7 +178,7 @@ const employeeTemplate: PresetTemplate = {
       { id: 'root.hireDate', name: 'hireDate', type: 'string', required: false },
       {
         id: 'root.skills', name: 'skills', type: 'array', required: false, collapsed: false,
-        items: { id: 'root.skills[0]', name: '[0]', type: 'string', required: false },
+        items: { id: 'root.skills[0]', name: 'item', type: 'string', required: false },
       },
       { id: 'root.email', name: 'email', type: 'string', required: true },
     ],

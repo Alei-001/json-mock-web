@@ -117,6 +117,9 @@
   cursor: pointer;
   transition: all 150ms ease-out;
   flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .theme-btn:hover {
@@ -132,6 +135,61 @@
 .theme-btn svg {
   width: 16px;
   height: 16px;
+}
+
+.lang-switcher {
+  position: relative;
+}
+
+.lang-switcher .theme-btn {
+  width: auto;
+  padding: 0 10px;
+  min-width: 32px;
+}
+
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  min-width: 120px;
+  padding: 4px;
+  z-index: 300;
+}
+
+.lang-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.lang-item:hover {
+  background: var(--surface);
+}
+
+.lang-item.lang-active {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.lang-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--primary);
 }
 
 /* ─── Responsive ─── */

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import styles from './PromptDialog.module.css'
 
 interface PromptDialogProps {
@@ -13,6 +14,7 @@ interface PromptDialogProps {
 }
 
 export default function PromptDialog({ open, title, label, defaultValue = '', suffix = '', placeholder = '', onConfirm, onClose }: PromptDialogProps) {
+  const { t } = useTranslation()
   const [value, setValue] = useState(defaultValue)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,8 +50,8 @@ export default function PromptDialog({ open, title, label, defaultValue = '', su
             autoFocus
           />
           <div className={styles.actions}>
-            <button type="button" className="btn-sm" onClick={onClose}>取消</button>
-            <button type="submit" className="btn-sm primary" disabled={!value.trim()}>确认</button>
+            <button type="button" className="btn-sm" onClick={onClose}>{t('common.cancel')}</button>
+            <button type="submit" className="btn-sm primary" disabled={!value.trim()}>{t('common.confirm')}</button>
           </div>
         </form>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import Papa from 'papaparse'
 import styles from './DataSourcePanel.module.css'
 import { useProjectStore } from '../../store/useProjectStore'
@@ -28,6 +29,7 @@ export default function DataSourcePanel() {
   const addDataSource = useProjectStore((s) => s.addDataSource)
   const removeDataSource = useProjectStore((s) => s.removeDataSource)
   const showToast = useProjectStore((s) => s.showToast)
+  const { t } = useTranslation()
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -43,7 +45,7 @@ export default function DataSourcePanel() {
         const text = reader.result as string
         const { data, type } = parseFile(file.name, text)
         if (data.length === 0) {
-          setError('文件中没有可解析的数据')
+          setError(t('dataSource.noDataParsed'))
           return
         }
         const dsName = file.name.replace(/\.[^.]+$/, '')
@@ -56,9 +58,9 @@ export default function DataSourcePanel() {
           createdAt: new Date().toISOString(),
         }
         addDataSource(ds)
-        showToast(existing ? `已更新 ${ds.name}` : `已导入 ${ds.name}`)
+        showToast(existing ? `${t('dataSource.updated')} ${ds.name}` : `${t('dataSource.imported')} ${ds.name}`)
       } catch (err) {
-        setError(`解析失败: ${(err as Error).message}`)
+        setError(`${t('dataSource.parseFailed')}: ${(err as Error).message}`)
       }
     }
     reader.readAsText(file)
@@ -74,12 +76,12 @@ export default function DataSourcePanel() {
   const handleDelete = (id: string) => {
     removeDataSource(id)
     setPreviewIndex(null)
-    showToast('已删除数据源')
+    showToast(t('dataSource.deleted'))
   }
 
   const previewDs = previewIndex !== null ? dataSources[previewIndex] : null
 
-  const jsonExample = '["值1","值2"]  或  [\u007B"name":"Alice"\u007D,...]'
+  const jsonExample = '["Val1","Val2"]  or  [\u007B"name":"Alice"\u007D,...]'
 
   return (
     <div className={styles.dataSourcePanel}>
@@ -97,7 +99,7 @@ export default function DataSourcePanel() {
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          导入文件
+          {t('dataSource.importFile')}
         </label>
         <span className={styles.spacer} />
         {error && <span style={{ fontSize: 12, color: 'var(--error)' }}>{error}</span>}
@@ -109,16 +111,16 @@ export default function DataSourcePanel() {
             <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z" />
             <polyline points="13 2 13 9 20 9" />
           </svg>
-          <span>暂无数据源</span>
-          <span style={{ fontSize: 11, opacity: 0.6 }}>支持 JSON / CSV / TXT / TSV 文件</span>
+          <span>{t('dataSource.noData')}</span>
+          <span style={{ fontSize: 11, opacity: 0.6 }}>{t('dataSource.supportedFormats')}</span>
 <div style={{ margin: '16px 0 0', textAlign: 'left', fontSize: 11, color: 'var(--muted)', lineHeight: 1.8 }}>
-            <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--ink-secondary)' }}>格式要求</div>
-            <div><span style={{ fontWeight: 500 }}>JSON</span> — 数组格式，每个元素为一个值或对象</div>
+            <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--ink-secondary)' }}>{t('dataSource.formatGuide')}</div>
+            <div><span style={{ fontWeight: 500 }}>JSON</span> — {t('dataSource.jsonFormat')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 6px' }}>{jsonExample}</div>
-            <div><span style={{ fontWeight: 500 }}>CSV / TSV</span> — 首行为表头，每行一条记录</div>
+            <div><span style={{ fontWeight: 500 }}>CSV / TSV</span> — {t('dataSource.csvTsvFormat')}</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 6px' }}>name,email<br/>Alice,a@b.com</div>
-            <div><span style={{ fontWeight: 500 }}>TXT</span> — 每行一个值</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 0' }}>值1<br/>值2<br/>值3</div>
+            <div><span style={{ fontWeight: 500 }}>TXT</span> — {t('dataSource.txtFormat')}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, padding: '4px 8px', background: 'var(--surface)', borderRadius: 4, margin: '2px 0 0' }}>Val1<br/>Val2<br/>Val3</div>
           </div>
         </div>
       ) : (
@@ -137,11 +139,11 @@ export default function DataSourcePanel() {
               </div>
               <div className={styles.dsInfo}>
                 <div className={styles.dsName}>{ds.name}</div>
-                <div className={styles.dsMeta}>{ds.type.toUpperCase()} · {ds.data.length} 条</div>
+                <div className={styles.dsMeta}>{ds.type.toUpperCase()} · {ds.data.length} {t('common.itemSuffix')}</div>
               </div>
               <button
                 className={styles.dsDelete}
-                title="删除数据源"
+                title={t('dataSource.delete')}
                 onClick={(e) => {
                   e.stopPropagation()
                   handleDelete(ds.id)
@@ -163,7 +165,7 @@ export default function DataSourcePanel() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>值</th>
+                <th>{t('dataSource.value')}</th>
               </tr>
             </thead>
             <tbody>

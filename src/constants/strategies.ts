@@ -11,40 +11,40 @@ export interface StrategyInfo {
 
 export const STRATEGY_REGISTRY: StrategyInfo[] = [
   // string
-  { id: 'email',       fakerPath: 'internet.email',      label: '邮箱',      fieldTypes: ['string'] },
-  { id: 'name',        fakerPath: 'person.fullName',      label: '姓名',      fieldTypes: ['string'] },
-  { id: 'phone',       fakerPath: 'phone.number',         label: '电话',      fieldTypes: ['string'] },
-  { id: 'uri',         fakerPath: 'internet.url',         label: '链接',      fieldTypes: ['string'] },
-  { id: 'uuid',        fakerPath: 'string.uuid',          label: 'UUID',      fieldTypes: ['string'] },
-  { id: 'datetime',    fakerPath: 'date.recent',          label: '日期时间',   fieldTypes: ['string'] },
-  { id: 'pastDatetime', fakerPath: 'date.past',          label: '过去日期',   fieldTypes: ['string'] },
-  { id: 'ip',          fakerPath: 'internet.ip',          label: 'IP 地址',   fieldTypes: ['string'] },
-  { id: 'sentence',    fakerPath: 'lorem.sentence',       label: '句子',      fieldTypes: ['string'] },
-  { id: 'paragraph',   fakerPath: 'lorem.paragraph',      label: '段落',      fieldTypes: ['string'] },
-  { id: 'street',      fakerPath: 'location.streetAddress', label: '街道',    fieldTypes: ['string'] },
-  { id: 'city',        fakerPath: 'location.city',         label: '城市',     fieldTypes: ['string'] },
-  { id: 'zipcode',     fakerPath: 'location.zipCode',     label: '邮编',     fieldTypes: ['string'] },
-  { id: 'jobType',     fakerPath: 'person.jobType',       label: '职位',      fieldTypes: ['string'] },
+  { id: 'email',       fakerPath: 'internet.email',      label: 'strategies.email',      fieldTypes: ['string'] },
+  { id: 'name',        fakerPath: 'person.fullName',      label: 'strategies.name',       fieldTypes: ['string'] },
+  { id: 'phone',       fakerPath: 'phone.number',         label: 'strategies.phone',      fieldTypes: ['string'] },
+  { id: 'uri',         fakerPath: 'internet.url',         label: 'strategies.uri',        fieldTypes: ['string'] },
+  { id: 'uuid',        fakerPath: 'string.uuid',          label: 'strategies.uuid',       fieldTypes: ['string'] },
+  { id: 'datetime',    fakerPath: 'date.recent',          label: 'strategies.datetime',   fieldTypes: ['string'] },
+  { id: 'pastDatetime', fakerPath: 'date.past',          label: 'strategies.pastDatetime', fieldTypes: ['string'] },
+  { id: 'ip',          fakerPath: 'internet.ip',          label: 'strategies.ip',         fieldTypes: ['string'] },
+  { id: 'sentence',    fakerPath: 'lorem.sentence',       label: 'strategies.sentence',   fieldTypes: ['string'] },
+  { id: 'paragraph',   fakerPath: 'lorem.paragraph',      label: 'strategies.paragraph',  fieldTypes: ['string'] },
+  { id: 'street',      fakerPath: 'location.streetAddress', label: 'strategies.street',   fieldTypes: ['string'] },
+  { id: 'city',        fakerPath: 'location.city',         label: 'strategies.city',      fieldTypes: ['string'] },
+  { id: 'zipcode',     fakerPath: 'location.zipCode',     label: 'strategies.zipcode',    fieldTypes: ['string'] },
+  { id: 'jobType',     fakerPath: 'person.jobType',       label: 'strategies.jobType',    fieldTypes: ['string'] },
 
   // number
-  { id: 'integer',     fakerPath: 'number.int',           label: '整数',      fieldTypes: ['number', 'integer'] },
-  { id: 'float',       fakerPath: 'number.float',         label: '浮点数',    fieldTypes: ['number'] },
-  { id: 'price',       fakerPath: 'commerce.price',        label: '价格',      fieldTypes: ['number'] },
+  { id: 'integer',     fakerPath: 'number.int',           label: 'strategies.integer',    fieldTypes: ['number', 'integer'] },
+  { id: 'float',       fakerPath: 'number.float',         label: 'strategies.float',      fieldTypes: ['number'] },
+  { id: 'price',       fakerPath: 'commerce.price',        label: 'strategies.price',     fieldTypes: ['number'] },
 
   // integer-only
-  { id: 'age',         fakerPath: 'number.int',           label: '年龄',      fieldTypes: ['integer'], presetConstraints: { minimum: 18, maximum: 65 } },
-  { id: 'year',        fakerPath: 'number.int',           label: '年份',      fieldTypes: ['integer'], presetConstraints: { minimum: 1970, maximum: 2030 } },
-  { id: 'quantity',    fakerPath: 'number.int',           label: '数量',      fieldTypes: ['integer'], presetConstraints: { minimum: 1, maximum: 100 } },
+  { id: 'age',         fakerPath: 'number.int',           label: 'strategies.age',        fieldTypes: ['integer'], presetConstraints: { minimum: 18, maximum: 65 } },
+  { id: 'year',        fakerPath: 'number.int',           label: 'strategies.year',       fieldTypes: ['integer'], presetConstraints: { minimum: 1970, maximum: 2030 } },
+  { id: 'quantity',    fakerPath: 'number.int',           label: 'strategies.quantity',   fieldTypes: ['integer'], presetConstraints: { minimum: 1, maximum: 100 } },
 
   // boolean
-  { id: 'random',      fakerPath: 'datatype.boolean',     label: '随机',      fieldTypes: ['boolean'] },
-  { id: 'alwaysTrue',  fakerPath: 'datatype.boolean',     label: '总是 true',  fieldTypes: ['boolean'] },
-  { id: 'alwaysFalse', fakerPath: 'datatype.boolean',     label: '总是 false', fieldTypes: ['boolean'] },
-  { id: 'mostlyTrue',  fakerPath: 'datatype.boolean',     label: '偏向 true',  fieldTypes: ['boolean'] },
-  { id: 'mostlyFalse', fakerPath: 'datatype.boolean',     label: '偏向 false', fieldTypes: ['boolean'] },
+  { id: 'random',      fakerPath: 'datatype.boolean',     label: 'strategies.random',     fieldTypes: ['boolean'] },
+  { id: 'alwaysTrue',  fakerPath: 'datatype.boolean',     label: 'strategies.alwaysTrue', fieldTypes: ['boolean'] },
+  { id: 'alwaysFalse', fakerPath: 'datatype.boolean',     label: 'strategies.alwaysFalse', fieldTypes: ['boolean'] },
+  { id: 'mostlyTrue',  fakerPath: 'datatype.boolean',     label: 'strategies.mostlyTrue', fieldTypes: ['boolean'] },
+  { id: 'mostlyFalse', fakerPath: 'datatype.boolean',     label: 'strategies.mostlyFalse', fieldTypes: ['boolean'] },
 
   // custom
-  { id: 'custom',      fakerPath: '',                     label: '自定义',    fieldTypes: ['string', 'number', 'integer'], isCustom: true },
+  { id: 'custom',      fakerPath: '',                     label: 'strategies.custom',     fieldTypes: ['string', 'number', 'integer'], isCustom: true },
 ]
 
 const REGISTRY_MAP = new Map(STRATEGY_REGISTRY.map((s) => [s.id, s]))

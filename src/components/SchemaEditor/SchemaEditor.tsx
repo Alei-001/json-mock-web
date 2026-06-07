@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import styles from './SchemaEditor.module.css'
 import TextEditor from './TextEditor'
 import PromptDialog from '../PromptDialog/PromptDialog'
@@ -6,6 +7,7 @@ import { useProjectStore } from '../../store/useProjectStore'
 import { schemaFieldToJsonSchema } from '../../utils/schemaConverter'
 import { downloadJson } from '../../utils/export'
 import { getStrategyById } from '../../constants/strategies'
+import i18n from '../../i18n'
 import type { SchemaField, FieldType, FieldConfig, DataSource, Binding } from '../../types'
 import { MAX_GENERATE_COUNT } from '../../types'
 
@@ -76,6 +78,7 @@ interface TreeNodeProps {
 }
 
 function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit, onToggle, onAdd, onRemove }: TreeNodeProps) {
+  const { t } = useTranslation()
   const expandable = field.type === 'object' || field.type === 'array'
   const expanded = !field.collapsed
   const indent = 8 + depth * 24
@@ -159,7 +162,7 @@ function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit
       <div className={styles.treeActions}>
         <button
           className={styles.treeActionBtn}
-          title="编辑字段"
+          title={t('schemaEditor.editField')}
           onClick={(e) => {
             e.stopPropagation()
             onEdit(field.id)
@@ -173,7 +176,7 @@ function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit
         {(field.type === 'object' || field.type === 'array') && (
           <button
             className={styles.treeActionBtn}
-            title="添加字段"
+            title={t('schemaEditor.addField')}
             onClick={(e) => {
               e.stopPropagation()
               onAdd(field.id)
@@ -188,7 +191,7 @@ function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit
         {!isRoot && (
           <button
             className={`${styles.treeActionBtn} ${styles.danger}`}
-            title="删除字段"
+            title={t('schemaEditor.deleteField')}
             onClick={(e) => {
               e.stopPropagation()
               onRemove(field.id)
@@ -216,7 +219,7 @@ function computeConfigTags(
 
   if (config?.fakerType) {
     const info = getStrategyById(config.fakerType)
-    if (info) tags.push(info.label)
+    if (info) tags.push(i18n.t(info.label))
   }
 
   if (config?.nullProbability && config.nullProbability > 0) {
@@ -236,9 +239,9 @@ function computeConfigTags(
       else if (c.maximum != null) tags.push(`≤${c.maximum}`)
     }
     if (field.type === 'array') {
-      if (c.minItems != null && c.maxItems != null) tags.push(`${c.minItems}~${c.maxItems}项`)
-      else if (c.minItems != null) tags.push(`≥${c.minItems}项`)
-      else if (c.maxItems != null) tags.push(`≤${c.maxItems}项`)
+      if (c.minItems != null && c.maxItems != null) tags.push(`${c.minItems}~${c.maxItems}${i18n.t('schemaEditor.itemCount')}`)
+      else if (c.minItems != null) tags.push(`≥${c.minItems}${i18n.t('schemaEditor.itemCount')}`)
+      else if (c.maxItems != null) tags.push(`≤${c.maxItems}${i18n.t('schemaEditor.itemCount')}`)
     }
   }
 
@@ -319,6 +322,7 @@ const GEN_FOOTER_MAX = 400
 const GEN_FOOTER_DEFAULT = 200
 
 export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'visual' | 'text'>('visual')
   const [editorText, setEditorText] = useState('')
   const [parseError, setParseError] = useState<string | null>(null)
@@ -405,11 +409,11 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     setEditorText(value)
     const success = importJsonSchema(value)
     if (!success) {
-      setParseError('JSON 解析失败，请检查格式是否正确')
+      setParseError(t('schemaEditor.parseError'))
     } else {
       setParseError(null)
     }
-  }, [importJsonSchema])
+  }, [importJsonSchema, t])
 
   const handleExport = useCallback(() => {
     setExportOpen(true)
@@ -418,8 +422,8 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const handleExportConfirm = useCallback((filename: string) => {
     const jsonSchema = schemaFieldToJsonSchema(schema, fieldConfigs)
     downloadJson(jsonSchema, filename)
-    showToast('已导出模板')
-  }, [schema, fieldConfigs, showToast])
+    showToast(t('schemaEditor.exportedTemplate'))
+  }, [schema, fieldConfigs, showToast, t])
 
   const handleClear = useCallback(() => {
     clearSchema()
@@ -428,8 +432,8 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
       const empty = JSON.stringify({ type: 'object', $schema: 'http://json-schema.org/draft-07/schema#' }, null, 2)
       setEditorText(empty)
     }
-    showToast('已清空')
-  }, [clearSchema, selectField, activeTab, showToast])
+    showToast(t('schemaEditor.cleared'))
+  }, [clearSchema, selectField, activeTab, showToast, t])
 
   const nodes = renderTreeNodes(
     schema,
@@ -450,19 +454,19 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
       <div className="card card-editor">
         <div className="card-header">
           <div className="card-header-left">
-            <span className="card-title">Schema 编辑器</span>
+            <span className="card-title">{t('schemaEditor.title')}</span>
             <div className="tabs">
               <button className={`tab ${activeTab === 'visual' ? 'active' : ''}`} onClick={() => handleTabChange('visual')}>
-                可视化
+                {t('schemaEditor.visual')}
               </button>
               <button className={`tab ${activeTab === 'text' ? 'active' : ''}`} onClick={() => handleTabChange('text')}>
-                文本
+                {t('schemaEditor.text')}
               </button>
 </div>
       <PromptDialog
         open={exportOpen}
-        title="导出模板"
-        label="文件名"
+        title={t('schemaEditor.exportTemplate')}
+        label={t('common.filename')}
         defaultValue="schema"
         suffix=".json"
         onConfirm={handleExportConfirm}
@@ -478,14 +482,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
-                  导出模板
+                  {t('schemaEditor.exportTemplate')}
                 </button>
                 <button className="btn-sm" onClick={handleClear}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                   </svg>
-                  清空
+                  {t('schemaEditor.clear')}
                 </button>
               </>
             )}
@@ -495,7 +499,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                 </svg>
-                清空
+                {t('schemaEditor.clear')}
               </button>
             )}
           </div>
@@ -532,9 +536,9 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
             {/* 生成数量 */}
             <div className={styles.genField}>
               <div className={styles.genLabelRow}>
-                <label className={styles.genLabel}>生成数量</label>
+                <label className={styles.genLabel}>{t('schemaEditor.generateCount')}</label>
                 {generationConfig.count > MAX_GENERATE_COUNT && (
-                  <span className={styles.genWarn}>最多 {MAX_GENERATE_COUNT} 条</span>
+                  <span className={styles.genWarn}>{t('schemaEditor.maxItems', { count: MAX_GENERATE_COUNT })}</span>
                 )}
               </div>
               <input
@@ -558,18 +562,18 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
               >
                 <polyline points="9 18 15 12 9 6" />
               </svg>
-              <span>高级选项</span>
+              <span>{t('schemaEditor.advancedOptions')}</span>
             </button>
 
             {/* 高级选项内容 */}
             {advancedOpen && (
               <div className={styles.genAdvanced}>
                 <div className={styles.genField}>
-                  <label className={styles.genLabel}>随机种子</label>
+                  <label className={styles.genLabel}>{t('schemaEditor.seed')}</label>
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="可选，用于复现相同数据"
+                    placeholder={t('schemaEditor.seedPlaceholder')}
                     value={generationConfig.seed}
                     onChange={(e) => updateGenerationConfig({ seed: e.target.value })}
                   />
@@ -585,7 +589,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
                 <polyline points="23 4 23 10 17 10" />
                 <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
               </svg>
-              重新生成
+              {t('schemaEditor.regenerate')}
             </button>
           </div>
         </div>

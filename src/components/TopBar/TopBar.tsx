@@ -1,6 +1,61 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import i18n from '../../i18n'
 import styles from './TopBar.module.css'
 import PromptDialog from '../PromptDialog/PromptDialog'
+
+const LANGS: { code: string; label: string }[] = [
+  { code: 'zh-CN', label: '中文' },
+  { code: 'en', label: 'English' },
+  { code: 'ja', label: '日本語' },
+  { code: 'ko', label: '한국어' },
+]
+
+function LangSwitcher() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const close = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [open])
+
+  const current = LANGS.find((l) => l.code === i18n.language) || LANGS[0]
+
+  return (
+    <div className={styles.langSwitcher} ref={ref}>
+      <button className={styles.themeBtn} onClick={() => setOpen(!open)} title={current.label}>
+        {current.label}
+      </button>
+      {open && (
+        <div className={styles.langDropdown}>
+          {LANGS.map((lang) => (
+            <button
+              key={lang.code}
+              className={`${styles.langItem} ${lang.code === i18n.language ? styles.langActive : ''}`}
+              onClick={() => {
+                i18n.changeLanguage(lang.code)
+                localStorage.setItem('json-mock-lang', lang.code)
+                setOpen(false)
+              }}
+            >
+              <span>{lang.label}</span>
+              {lang.code === i18n.language && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 import { useProjectStore } from '../../store/useProjectStore'
 
 function Logo() {
@@ -80,6 +135,7 @@ const exportIcon = (
 )
 
 export default function TopBar({ onTemplate, onDataSource }: { onTemplate: () => void; onDataSource: () => void }) {
+  const { t } = useTranslation()
   const theme = useProjectStore((s) => s.theme)
   const toggleTheme = useProjectStore((s) => s.toggleTheme)
   const loadSchema = useProjectStore((s) => s.loadSchema)
@@ -106,7 +162,7 @@ export default function TopBar({ onTemplate, onDataSource }: { onTemplate: () =>
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    showToast('已导出项目')
+    showToast(t('topbar.exportedProject'))
   }
 
   const handleImport = () => {
@@ -131,12 +187,12 @@ export default function TopBar({ onTemplate, onDataSource }: { onTemplate: () =>
           if (data.bindings) {
             useProjectStore.setState({ bindings: data.bindings })
           }
-          showToast('已导入项目')
+          showToast(t('topbar.importedProject'))
         } else {
-          showToast('文件格式不正确')
+          showToast(t('topbar.invalidFormat'))
         }
       } catch {
-        showToast('导入失败：文件解析错误')
+        showToast(t('topbar.importFailed'))
       }
     }
     reader.readAsText(file)
@@ -148,8 +204,8 @@ export default function TopBar({ onTemplate, onDataSource }: { onTemplate: () =>
       <div className={styles.topbarLeft}>
         <Logo />
         <nav className={styles.topbarNav}>
-          <NavButton icon={templateIcon} onClick={onTemplate}>模板库</NavButton>
-          <NavButton icon={dataSourceIcon} onClick={onDataSource}>数据源</NavButton>
+          <NavButton icon={templateIcon} onClick={onTemplate}>{t('topbar.templates')}</NavButton>
+          <NavButton icon={dataSourceIcon} onClick={onDataSource}>{t('topbar.dataSources')}</NavButton>
         </nav>
       </div>
       <div className={styles.topbarRight}>
@@ -160,22 +216,23 @@ export default function TopBar({ onTemplate, onDataSource }: { onTemplate: () =>
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
-        <button className={styles.themeBtn} onClick={toggleTheme} title={theme === 'light' ? '切换暗色模式' : '切换亮色模式'}>
+        <button className={styles.themeBtn} onClick={toggleTheme} title={theme === 'light' ? t('topbar.switchDark') : t('topbar.switchLight')}>
           {theme === 'light' ? moonIcon : sunIcon}
         </button>
+        <LangSwitcher />
         <button className="btn-sm" onClick={handleImport}>
           {importIcon}
-          <span className={styles.btnLabel}>导入</span>
+          <span className={styles.btnLabel}>{t('common.import')}</span>
         </button>
         <button className="btn-sm primary" onClick={() => setExportOpen(true)}>
           {exportIcon}
-          <span className={styles.btnLabel}>导出</span>
+          <span className={styles.btnLabel}>{t('common.export')}</span>
         </button>
       </div>
       <PromptDialog
         open={exportOpen}
-        title="导出项目"
-        label="文件名"
+        title={t('topbar.exportProject')}
+        label={t('common.filename')}
         defaultValue="project"
         suffix=".json-mock"
         onConfirm={handleExportConfirm}

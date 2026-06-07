@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import TopBar from './components/TopBar/TopBar'
 import SchemaEditor from './components/SchemaEditor/SchemaEditor'
 import DataPreview from './components/DataPreview/DataPreview'
@@ -10,6 +11,7 @@ import Toast from './components/Toast/Toast'
 import { useProjectStore } from './store/useProjectStore'
 
 function App() {
+  const { t } = useTranslation()
   const [fieldModalOpen, setFieldModalOpen] = useState(false)
   const [dsModalOpen, setDsModalOpen] = useState(false)
   const [tmplModalOpen, setTmplModalOpen] = useState(false)
@@ -49,10 +51,10 @@ function App() {
         <DataPreview />
       </div>
       <FieldConfigModal open={fieldModalOpen} fieldId={selectedFieldId} onClose={handleCloseFieldModal} />
-      <Modal open={dsModalOpen} title="数据源管理" subtitle="管理已导入的数据源" onClose={handleCloseDs}>
+      <Modal open={dsModalOpen} title={t('dataSource.title')} subtitle={t('dataSource.subtitle')} onClose={handleCloseDs}>
         <DataSourcePanel />
       </Modal>
-      <Modal open={tmplModalOpen} title="模板库" subtitle="选择一个预设模板开始" onClose={handleCloseTmpl}>
+      <Modal open={tmplModalOpen} title={t('template.title')} subtitle={t('template.subtitle')} onClose={handleCloseTmpl}>
         <TemplateLibrary onSelect={handleCloseTmpl} />
       </Modal>
       <Toast visible={!!toastMessage} message={toastMessage ?? ''} />

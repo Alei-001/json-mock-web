@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 import Select from '../Select/Select'
 import { useProjectStore } from '../../store/useProjectStore'
@@ -26,6 +27,7 @@ interface FieldConfigModalProps {
 }
 
 export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfigModalProps) {
+  const { t } = useTranslation()
   const schema = useProjectStore((s) => s.schema)
   const fieldConfigs = useProjectStore((s) => s.fieldConfigs)
   const dataSources = useProjectStore((s) => s.dataSources)
@@ -156,7 +158,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
       unbindField(fieldId)
     }
 
-    showToast('配置已保存')
+    showToast(t('fieldConfig.saved'))
     onClose()
   }
 
@@ -174,19 +176,19 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
   return (
     <Modal
       open={open}
-      title="字段配置"
+      title={t('fieldConfig.title')}
       subtitle={displayName}
       onClose={onClose}
       footer={
         <>
-          <button className="btn-sm" onClick={onClose}>取消</button>
-          <button className="btn-sm primary" onClick={handleSave}>保存</button>
+          <button className="btn-sm" onClick={onClose}>{t('common.cancel')}</button>
+          <button className="btn-sm primary" onClick={handleSave}>{t('common.save')}</button>
         </>
       }
     >
       <div className="form-grid">
         <div className="form-group full-width">
-          <label className="form-label">字段名称</label>
+          <label className="form-label">{t('fieldConfig.fieldName')}</label>
           <input
             type="text"
             className="form-input mono"
@@ -196,7 +198,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
         </div>
 
         <div className="form-group full-width">
-          <label className="form-label">字段类型</label>
+          <label className="form-label">{t('fieldConfig.fieldType')}</label>
           <Select
             value={fieldType}
             onChange={(val) => {
@@ -228,17 +230,17 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
         <div className="form-group full-width">
           <div className="toggle-row">
-            <span className="toggle-label">必填</span>
+            <span className="toggle-label">{t('fieldConfig.required')}</span>
             <button
               className={`toggle ${required ? 'active' : ''}`}
-              aria-label="切换必填状态"
+              aria-label={t('fieldConfig.toggleRequired')}
               onClick={() => setRequired(!required)}
             />
           </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label">null 概率 (%)</label>
+          <label className="form-label">{t('fieldConfig.nullProb')}</label>
           <input
             type="number"
             className="form-input"
@@ -252,18 +254,18 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
         {hasStrategy && (
           <div className="form-group full-width">
-            <label className="form-label">生成策略</label>
+            <label className="form-label">{t('fieldConfig.strategy')}</label>
             <Select
               value={strategy}
               onChange={handleStrategyChange}
-              options={currentStrategies.map((s) => ({ value: s.id, label: s.label }))}
+              options={currentStrategies.map((s) => ({ value: s.id, label: t(s.label) }))}
             />
           </div>
         )}
 
         {showConstraints && (
           <div className="form-group full-width">
-            <label className="form-label">{isStringType ? '长度范围' : '值范围'}</label>
+            <label className="form-label">{isStringType ? t('fieldConfig.lengthRange') : t('fieldConfig.valueRange')}</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <input
                 type="number"
@@ -271,7 +273,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
                 min={isStringType ? 0 : undefined}
                 value={minValue}
                 onChange={(e) => setMinValue(e.target.value)}
-                placeholder="最小"
+                placeholder={t('fieldConfig.min')}
                 style={{ flex: 1 }}
               />
               <span style={{ color: 'var(--muted)', fontSize: 12 }}>-</span>
@@ -281,7 +283,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
                 min={isStringType ? 0 : undefined}
                 value={maxValue}
                 onChange={(e) => setMaxValue(e.target.value)}
-                placeholder="最大"
+                placeholder={t('fieldConfig.max')}
                 style={{ flex: 1 }}
               />
             </div>
@@ -290,7 +292,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
         {showArrayConstraints && (
           <div className="form-group full-width">
-            <label className="form-label">元素个数范围</label>
+            <label className="form-label">{t('fieldConfig.itemRange')}</label>
             <div style={{ display: 'flex', gap: 8 }}>
               <input
                 type="number"
@@ -298,7 +300,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
                 min={0}
                 value={minItems}
                 onChange={(e) => setMinItems(e.target.value)}
-                placeholder="最少"
+                placeholder={t('fieldConfig.minItems')}
                 style={{ flex: 1 }}
               />
               <span style={{ lineHeight: '36px', color: 'var(--muted)', fontSize: 12 }}>-</span>
@@ -308,7 +310,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
                 min={0}
                 value={maxItems}
                 onChange={(e) => setMaxItems(e.target.value)}
-                placeholder="最多"
+                placeholder={t('fieldConfig.maxItems')}
                 style={{ flex: 1 }}
               />
             </div>
@@ -317,7 +319,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
 
         {hasStrategy && isCustom && (
           <div className="form-group full-width">
-            <label className="form-label">正则约束</label>
+            <label className="form-label">{t('fieldConfig.regex')}</label>
             <input
               type="text"
               className="form-input mono"
@@ -331,14 +333,14 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
         {isCustom && (
           <>
             <div className="form-group full-width">
-              <label className="form-label">数据源</label>
+              <label className="form-label">{t('fieldConfig.dataSource')}</label>
               <Select
                 value={boundDsId}
                 onChange={(val) => setBoundDsId(val)}
                 disabled={dataSources.length === 0}
-                placeholder="不绑定"
+                placeholder={t('fieldConfig.noBinding')}
                 options={[
-                  { value: '', label: '不绑定' },
+                  { value: '', label: t('fieldConfig.noBinding') },
                   ...dataSources.map((ds) => ({ value: ds.id, label: `${ds.name} (${ds.data.length}条)` }))
                 ]}
               />
@@ -349,19 +351,19 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
                     <line x1="12" y1="16" x2="12" y2="12" />
                     <line x1="12" y1="8" x2="12.01" y2="8" />
                   </svg>
-                  尚未导入数据源，请通过 TopBar「数据源」导入文件后绑定
+                  {t('fieldConfig.noDataSourceHint')}
                 </div>
               )}
             </div>
             {boundDsId && (
               <div className="form-group">
-                <label className="form-label">抽样策略</label>
+                <label className="form-label">{t('fieldConfig.samplingStrategy')}</label>
                 <Select
                   value={samplingStr}
                   onChange={(val) => setSamplingStr(val as 'random' | 'sequential')}
                   options={[
-                    { value: 'random', label: '随机抽取' },
-                    { value: 'sequential', label: '顺序循环' }
+                    { value: 'random', label: t('fieldConfig.random') },
+                    { value: 'sequential', label: t('fieldConfig.sequential') }
                   ]}
                 />
               </div>

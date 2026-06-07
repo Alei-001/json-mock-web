@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import styles from './TemplateLibrary.module.css'
 import { useProjectStore } from '../../store/useProjectStore'
 import { PRESET_TEMPLATES } from '../../constants/templates'
@@ -46,37 +47,38 @@ interface TemplateLibraryProps {
 }
 
 export default function TemplateLibrary({ onSelect }: TemplateLibraryProps) {
+  const { t } = useTranslation()
   const loadSchema = useProjectStore((s) => s.loadSchema)
   const showToast = useProjectStore((s) => s.showToast)
 
   const handleSelect = useCallback((id: string) => {
-    const template = PRESET_TEMPLATES.find((t) => t.id === id)
+    const template = PRESET_TEMPLATES.find((tmpl) => tmpl.id === id)
     if (!template) return
     loadSchema(template.schema, template.fieldConfigs)
-    showToast(`已加载「${template.name}」模板`)
+    showToast(t('template.loaded', { name: t(template.name) }))
     onSelect()
-  }, [loadSchema, onSelect, showToast])
+  }, [loadSchema, onSelect, showToast, t])
 
   return (
     <div className={styles.tmplGrid}>
-      {PRESET_TEMPLATES.map((t) => (
+      {PRESET_TEMPLATES.map((tmpl) => (
         <div
-          key={t.id}
+          key={tmpl.id}
           className={styles.tmplCard}
           tabIndex={0}
           role="button"
-          onClick={() => handleSelect(t.id)}
+          onClick={() => handleSelect(tmpl.id)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSelect(t.id)
+            if (e.key === 'Enter') handleSelect(tmpl.id)
           }}
         >
           <div className={styles.tmplCardHeader}>
             <div className={styles.tmplIcon}>
-              {TEMPLATE_ICONS[t.id]}
+              {TEMPLATE_ICONS[tmpl.id]}
             </div>
-            <span className={styles.tmplName}>{t.name}</span>
+            <span className={styles.tmplName}>{t(tmpl.name)}</span>
           </div>
-          <div className={styles.tmplDesc}>{t.description}</div>
+          <div className={styles.tmplDesc}>{t(tmpl.description)}</div>
         </div>
       ))}
     </div>

@@ -1,10 +1,12 @@
 import { useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import styles from './DataPreview.module.css'
 import { useProjectStore } from '../../store/useProjectStore'
 import { highlightJson } from '../../utils/syntaxHighlight'
 import { copyToClipboard, downloadJson } from '../../utils/export'
 
 export default function DataPreview() {
+  const { t } = useTranslation()
   const generatedData = useProjectStore((s) => s.generatedData)
   const showToast = useProjectStore((s) => s.showToast)
 
@@ -18,9 +20,9 @@ export default function DataPreview() {
     if (generatedData) {
       try {
         await copyToClipboard(generatedData)
-        showToast('已复制到剪贴板')
+        showToast(t('dataPreview.copied'))
       } catch {
-        showToast('复制失败')
+        showToast(t('dataPreview.copyFailed'))
       }
     }
   }, [generatedData, showToast])
@@ -28,7 +30,7 @@ export default function DataPreview() {
   const handleDownloadJson = useCallback(() => {
     if (generatedData) {
       downloadJson(generatedData)
-      showToast('已下载 JSON 文件')
+      showToast(t('dataPreview.downloaded'))
     }
   }, [generatedData, showToast])
 
@@ -54,7 +56,7 @@ export default function DataPreview() {
 
           {!generatedData ? (
             <div className={styles.emptyState}>
-              点击「重新生成」查看数据
+              {t('dataPreview.placeholder')}
             </div>
           ) : (
             <JsonPreview data={generatedData} />

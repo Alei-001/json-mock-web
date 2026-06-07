@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import styles from './Select.module.css'
 
 interface SelectOption {
@@ -14,7 +15,9 @@ interface SelectProps {
   placeholder?: string
 }
 
-export default function Select({ value, onChange, options, disabled = false, placeholder = '请选择' }: SelectProps) {
+export default function Select({ value, onChange, options, disabled = false, placeholder }: SelectProps) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t('common.placeholder')
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const listboxId = useId()
@@ -93,7 +96,7 @@ export default function Select({ value, onChange, options, disabled = false, pla
         aria-labelledby={listboxId}
       >
         <span className={styles.value}>
-          {selected ? selected.label : (value || placeholder)}
+          {selected ? selected.label : (value || resolvedPlaceholder)}
         </span>
         <svg
           className={styles.chevron}
