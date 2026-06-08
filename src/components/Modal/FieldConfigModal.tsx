@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 import Select from '../Select/Select'
@@ -39,51 +39,25 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
   const showToast = useProjectStore((s) => s.showToast)
 
   const field = fieldId ? findNodeById(schema, fieldId) : null
-  const [fieldName, setFieldName] = useState('')
-  const [fieldType, setFieldType] = useState<FieldType>('string')
-  const [required, setRequired] = useState(false)
-  const [strategy, setStrategy] = useState('')
-  const [minValue, setMinValue] = useState('')
-  const [maxValue, setMaxValue] = useState('')
-  const [minItems, setMinItems] = useState('')
-  const [maxItems, setMaxItems] = useState('')
-  const [pattern, setPattern] = useState('')
-  const [nullProb, setNullProb] = useState('')
-  const [boundDsId, setBoundDsId] = useState('')
-  const [samplingStr, setSamplingStr] = useState<'random' | 'sequential'>('random')
+  const config = fieldId ? fieldConfigs[fieldId] : undefined
+  const binding = fieldId ? bindings[fieldId] : undefined
 
-  const syncFromStore = useCallback(() => {
-    if (field) {
-      setFieldName(field.name)
-      setFieldType(field.type as FieldType)
-      setRequired(field.required)
-
-      const config = fieldId ? fieldConfigs[fieldId] : undefined
-      const savedStrategy = (config?.fakerType ?? '')
-        || (config?.constraints?.pattern ? 'custom' : '')
-        || getStrategiesForType(field.type as FieldType)[0]?.id
-        || ''
-      setStrategy(savedStrategy)
-      setMinValue(config?.constraints?.minimum?.toString() ?? config?.constraints?.minLength?.toString() ?? '')
-      setMaxValue(config?.constraints?.maximum?.toString() ?? config?.constraints?.maxLength?.toString() ?? '')
-      setMinItems(config?.constraints?.minItems?.toString() ?? '')
-      setMaxItems(config?.constraints?.maxItems?.toString() ?? '')
-      setPattern(config?.constraints?.pattern ?? '')
-      setNullProb(config?.nullProbability?.toString() ?? '')
-      const binding = fieldId ? bindings[fieldId] : undefined
-      if (binding) {
-        setBoundDsId(binding.dataSourceId)
-        setSamplingStr(binding.strategy)
-      } else {
-        setBoundDsId('')
-        setSamplingStr('random')
-      }
-    }
-  }, [field, fieldId, fieldConfigs, bindings])
-
-  useEffect(() => {
-    if (open) syncFromStore()
-  }, [open, syncFromStore])
+  const initialStrategy = (config?.fakerType ?? '')
+    || (config?.constraints?.pattern ? 'custom' : '')
+    || (field ? getStrategiesForType(field.type as FieldType)[0]?.id : '')
+    || ''
+  const [fieldName, setFieldName] = useState(field?.name ?? '')
+  const [fieldType, setFieldType] = useState<FieldType>((field?.type as FieldType) ?? 'string')
+  const [required, setRequired] = useState(field?.required ?? false)
+  const [strategy, setStrategy] = useState(initialStrategy)
+  const [minValue, setMinValue] = useState(config?.constraints?.minimum?.toString() ?? config?.constraints?.minLength?.toString() ?? '')
+  const [maxValue, setMaxValue] = useState(config?.constraints?.maximum?.toString() ?? config?.constraints?.maxLength?.toString() ?? '')
+  const [minItems, setMinItems] = useState(config?.constraints?.minItems?.toString() ?? '')
+  const [maxItems, setMaxItems] = useState(config?.constraints?.maxItems?.toString() ?? '')
+  const [pattern, setPattern] = useState(config?.constraints?.pattern ?? '')
+  const [nullProb, setNullProb] = useState(config?.nullProbability?.toString() ?? '')
+  const [boundDsId, setBoundDsId] = useState(binding?.dataSourceId ?? '')
+  const [samplingStr, setSamplingStr] = useState<'random' | 'sequential'>(binding?.strategy ?? 'random')
 
   const handleStrategyChange = (newStrategy: string) => {
     setStrategy(newStrategy)

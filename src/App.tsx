@@ -56,7 +56,7 @@ function App() {
             <SchemaEditor onEditField={handleEditField} />
             <DataPreview />
           </div>
-          <FieldConfigModal open={fieldModalOpen} fieldId={selectedFieldId} onClose={handleCloseFieldModal} />
+          <FieldConfigModal key={fieldModalOpen ? selectedFieldId ?? 'no-field' : 'closed'} open={fieldModalOpen} fieldId={selectedFieldId} onClose={handleCloseFieldModal} />
           <Modal open={dsModalOpen} title={t('dataSource.title')} subtitle={t('dataSource.subtitle')} onClose={handleCloseDs}>
             <DataSourcePanel />
           </Modal>

@@ -377,20 +377,22 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const updateGenerationConfig = useProjectStore((s) => s.updateGenerationConfig)
   const generate = useProjectStore((s) => s.generate)
   const showToast = useProjectStore((s) => s.showToast)
+  const bindings = useProjectStore((s) => s.bindings)
+  const dataSources = useProjectStore((s) => s.dataSources)
 
   const handleCountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const v = Number(e.target.value)
     updateGenerationConfig({ count: Math.max(1, isNaN(v) ? 1 : v) })
   }, [updateGenerationConfig])
 
-  const handleSelect = (id: string) => {
+  const handleSelect = useCallback((id: string) => {
     selectField(id)
-  }
+  }, [selectField])
 
-  const handleEdit = (id: string) => {
+  const handleEdit = useCallback((id: string) => {
     selectField(id)
     onEditField(id)
-  }
+  }, [selectField, onEditField])
 
   const jsonSchemaText = useMemo(() => {
     const jsonSchema = schemaFieldToJsonSchema(schema, fieldConfigs)
@@ -435,18 +437,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     showToast(t('schemaEditor.cleared'))
   }, [clearSchema, selectField, activeTab, showToast, t])
 
-  const nodes = renderTreeNodes(
-    schema,
-    0,
-    selectedFieldId,
-    handleSelect,
-    handleEdit,
-    toggleFieldCollapsed,
-    addField,
-    removeField,
-    fieldConfigs,
-    useProjectStore.getState().bindings,
-    useProjectStore.getState().dataSources,
+  const nodes = useMemo(
+    () =>
+      renderTreeNodes(
+        schema, 0, selectedFieldId, handleSelect, handleEdit,
+        toggleFieldCollapsed, addField, removeField,
+        fieldConfigs, bindings, dataSources,
+      ),
+    [schema, selectedFieldId, fieldConfigs, bindings, dataSources, handleSelect, handleEdit, toggleFieldCollapsed, addField, removeField],
   )
 
   return (
@@ -464,6 +462,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
               </button>
 </div>
       <PromptDialog
+        key={exportOpen ? 'open' : 'closed'}
         open={exportOpen}
         title={t('schemaEditor.exportTemplate')}
         label={t('common.filename')}

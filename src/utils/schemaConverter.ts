@@ -182,6 +182,7 @@ export function jsonSchemaToSchemaField(
 
   let type = (schema.type as string) || 'object'
   if (!JSON_SCHEMA_TYPES[type]) type = 'object'
+  schema.type = type
 
   const result = jsonSchemaToField(schema, 'root', '')
   return {

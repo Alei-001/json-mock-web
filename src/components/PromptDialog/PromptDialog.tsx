@@ -19,13 +19,10 @@ export default function PromptDialog({ open, title, label, defaultValue = '', su
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (open) {
-      setValue(defaultValue)
-      requestAnimationFrame(() => {
-        inputRef.current?.select()
-      })
-    }
-  }, [open, defaultValue])
+    requestAnimationFrame(() => {
+      inputRef.current?.select()
+    })
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
