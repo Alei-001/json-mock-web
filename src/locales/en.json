@@ -39,6 +39,8 @@
     "seedPlaceholder": "Optional, for reproducible data",
     "regenerate": "Generate",
     "autoPreview": "Auto Preview",
+    "optionalFieldRate": "Optional Field Probability",
+    "fakerLocale": "Faker Locale",
     "moreActions": "More Actions",
     "exportedTemplate": "Template exported",
     "cleared": "Cleared",

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './SchemaEditor.module.css'
 import TextEditor from './TextEditor'
+import Select from '../Select/Select'
 import PromptDialog from '../PromptDialog/PromptDialog'
 import { useProjectStore } from '../../store/useProjectStore'
 import { schemaFieldToJsonSchema } from '../../utils/schemaConverter'
@@ -614,6 +615,37 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
                 placeholder={t('schemaEditor.seedPlaceholder')}
                 value={generationConfig.seed}
                 onChange={(e) => updateGenerationConfig({ seed: e.target.value })}
+              />
+            </div>
+            <div className={styles.genField}>
+              <div className={styles.genLabelRow}>
+                <label className={styles.genLabel}>{t('schemaEditor.optionalFieldRate')}</label>
+                <span className={styles.genRateValue}>{generationConfig.optionalFieldRate ?? 30}%</span>
+              </div>
+              <input
+                type="range"
+                className={styles.genSlider}
+                min={0}
+                max={100}
+                step={5}
+                value={generationConfig.optionalFieldRate ?? 30}
+                onChange={(e) => updateGenerationConfig({ optionalFieldRate: Number(e.target.value) })}
+              />
+            </div>
+            <div className={styles.genField}>
+              <label className={styles.genLabel}>{t('schemaEditor.fakerLocale')}</label>
+              <Select
+                value={generationConfig.fakerLocale || 'en'}
+                onChange={(v) => updateGenerationConfig({ fakerLocale: v })}
+                options={[
+                  { value: 'en', label: 'English' },
+                  { value: 'zh_CN', label: '中文' },
+                  { value: 'ja', label: '日本語' },
+                  { value: 'ko', label: '한국어' },
+                  { value: 'de', label: 'Deutsch' },
+                  { value: 'fr', label: 'Français' },
+                  { value: 'es', label: 'Español' },
+                ]}
               />
             </div>
             <div className={styles.genToggleRow}>

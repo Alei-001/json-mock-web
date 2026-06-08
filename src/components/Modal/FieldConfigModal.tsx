@@ -206,16 +206,19 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
           </div>
         </div>
 
-        <div className="form-group">
-          <label className="form-label">{t('fieldConfig.nullProb')}</label>
+        <div className="form-group full-width">
+          <div className="form-label-row">
+            <label className="form-label">{t('fieldConfig.nullProb')}</label>
+            <span className="form-rate-value">{nullProb || '0'}%</span>
+          </div>
           <input
-            type="number"
-            className="form-input"
+            type="range"
+            className="form-slider"
             min={0}
             max={100}
-            value={nullProb}
+            step={5}
+            value={nullProb || '0'}
             onChange={(e) => setNullProb(e.target.value)}
-            placeholder="0"
           />
         </div>
 
@@ -323,7 +326,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
               )}
             </div>
             {boundDsId && (
-              <div className="form-group">
+        <div className="form-group full-width">
                 <label className="form-label">{t('fieldConfig.samplingStrategy')}</label>
                 <Select
                   value={samplingStr}

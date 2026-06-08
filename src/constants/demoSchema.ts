@@ -114,4 +114,6 @@ export const demoFieldConfigs: Record<string, FieldConfig> = {
 export const demoGenerationConfig: GenerationConfig = {
   count: 1,
   seed: '',
+  optionalFieldRate: 100,
+  fakerLocale: 'en',
 }

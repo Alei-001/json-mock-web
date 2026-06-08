@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useId } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './Select.module.css'
 
@@ -19,19 +19,25 @@ export default function Select({ value, onChange, options, disabled = false, pla
   const { t } = useTranslation()
   const resolvedPlaceholder = placeholder ?? t('common.placeholder')
   const [open, setOpen] = useState(false)
+  const [direction, setDirection] = useState<'down' | 'up'>('down')
   const containerRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLUListElement>(null)
   const listboxId = useId()
 
   const selected = options.find((o) => o.value === value)
 
   const handleToggle = useCallback(() => {
     if (disabled) return
-    setOpen((prev) => !prev)
+    setOpen((prev) => {
+      if (prev) setDirection('down')
+      return !prev
+    })
   }, [disabled])
 
   const handleSelect = useCallback((val: string) => {
     onChange(val)
     setOpen(false)
+    setDirection('down')
   }, [onChange])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -68,6 +74,36 @@ export default function Select({ value, onChange, options, disabled = false, pla
       }
     }
   }, [open, options, value, onChange, handleToggle])
+
+  useLayoutEffect(() => {
+    if (!open) return
+    const trigger = containerRef.current?.querySelector<HTMLButtonElement>('button')
+    const dropdown = dropdownRef.current
+    if (!trigger || !dropdown) return
+
+    const triggerRect = trigger.getBoundingClientRect()
+    const dropdownHeight = dropdown.offsetHeight
+    let spaceBelow = window.innerHeight - triggerRect.bottom
+    let spaceAbove = triggerRect.top
+
+    let parent = trigger.parentElement
+    while (parent) {
+      const style = window.getComputedStyle(parent)
+      const overflowY = style.overflowY
+      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'hidden') {
+        const parentRect = parent.getBoundingClientRect()
+        spaceBelow = Math.min(spaceBelow, parentRect.bottom - triggerRect.bottom)
+        spaceAbove = Math.min(spaceAbove, triggerRect.top - parentRect.top)
+      }
+      parent = parent.parentElement
+    }
+
+    if (spaceBelow < dropdownHeight + 4 && spaceAbove > dropdownHeight + 4) {
+      setDirection('up')
+    } else {
+      setDirection('down')
+    }
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -111,7 +147,12 @@ export default function Select({ value, onChange, options, disabled = false, pla
       </button>
 
       {open && (
-        <ul className={styles.dropdown} role="listbox" id={listboxId}>
+        <ul
+          ref={dropdownRef}
+          className={`${styles.dropdown} ${styles[direction]}`}
+          role="listbox"
+          id={listboxId}
+        >
           {options.map((opt) => (
             <li
               key={opt.value}

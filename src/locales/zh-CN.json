@@ -39,6 +39,8 @@
     "seedPlaceholder": "可选，用于复现相同数据",
     "regenerate": "生成",
     "autoPreview": "实时预览",
+    "optionalFieldRate": "可选字段生成概率",
+    "fakerLocale": "Faker 地区",
     "moreActions": "更多操作",
     "exportedTemplate": "已导出模板",
     "cleared": "已清空",

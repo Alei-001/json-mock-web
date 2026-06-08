@@ -430,6 +430,60 @@ body {
   color: var(--ink-secondary);
 }
 
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-rate-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.form-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.form-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  transition: transform 100ms ease-out;
+}
+
+.form-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: none;
+  cursor: pointer;
+}
+
+.form-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.form-slider:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
 /* ─── Shared: Toggle ─── */
 
 .toggle-row {

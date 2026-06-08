@@ -47,6 +47,8 @@ export interface Binding {
 export interface GenerationConfig {
   count: number
   seed: string
+  optionalFieldRate: number
+  fakerLocale: string
 }
 
 export interface Project {
