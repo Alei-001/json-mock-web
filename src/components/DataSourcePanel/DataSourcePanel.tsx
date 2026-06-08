@@ -60,7 +60,7 @@ export default function DataSourcePanel() {
         addDataSource(ds)
         showToast(existing ? `${t('dataSource.updated')} ${ds.name}` : `${t('dataSource.imported')} ${ds.name}`)
       } catch (err) {
-        setError(`${t('dataSource.parseFailed')}: ${(err as Error).message}`)
+        setError(`${t('dataSource.parseFailed')}: ${err instanceof Error ? err.message : String(err)}`)
       }
     }
     reader.readAsText(file)

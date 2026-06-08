@@ -1,4 +1,4 @@
-export type FieldType = 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null'
+export type FieldType = 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array'
 
 export const MAX_GENERATE_COUNT = 1000
 

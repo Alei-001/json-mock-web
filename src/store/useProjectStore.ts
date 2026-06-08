@@ -10,7 +10,7 @@ type Theme = 'light' | 'dark'
 
 /* ─── Tree helpers ─── */
 
-function findNode(root: SchemaField, id: string): SchemaField | null {
+export function findNode(root: SchemaField, id: string): SchemaField | null {
   if (root.id === id) return root
   if (root.children) {
     for (const child of root.children) {
@@ -50,10 +50,12 @@ function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
+let _idSeq = 0
 function generateId(parentId: string): string {
-  const base = `${parentId}.field_${Date.now()}`
-  return base
+  return `${parentId}.field_${Date.now()}_${++_idSeq}`
 }
+
+let toastTimer: ReturnType<typeof setTimeout> | undefined
 
 /* ─── Store ─── */
 
@@ -235,7 +237,8 @@ export const useProjectStore = create<ProjectState>()(
         generatedData: null,
       })
       return true
-    } catch {
+    } catch (e) {
+      console.error('Import JSON Schema failed:', e)
       return false
     }
   },
@@ -281,9 +284,11 @@ export const useProjectStore = create<ProjectState>()(
   },
 
   showToast: (message) => {
+    if (toastTimer) clearTimeout(toastTimer)
     set({ toastMessage: message })
-    setTimeout(() => {
+    toastTimer = setTimeout(() => {
       set({ toastMessage: null })
+      toastTimer = undefined
     }, 2000)
   },
 

@@ -2,23 +2,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 import Select from '../Select/Select'
-import { useProjectStore } from '../../store/useProjectStore'
+import { useProjectStore, findNode } from '../../store/useProjectStore'
 import { getStrategiesForType, getStrategyById } from '../../constants/strategies'
-import type { SchemaField, FieldType, FieldConfig } from '../../types'
+import type { FieldType, FieldConfig } from '../../types'
 
 const FIELD_TYPES: FieldType[] = ['string', 'number', 'integer', 'boolean', 'object', 'array']
-
-function findNodeById(node: SchemaField, id: string): SchemaField | null {
-  if (node.id === id) return node
-  if (node.children) {
-    for (const child of node.children) {
-      const found = findNodeById(child, id)
-      if (found) return found
-    }
-  }
-  if (node.items) return findNodeById(node.items, id)
-  return null
-}
 
 interface FieldConfigModalProps {
   open: boolean
@@ -38,7 +26,7 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
   const unbindField = useProjectStore((s) => s.unbindField)
   const showToast = useProjectStore((s) => s.showToast)
 
-  const field = fieldId ? findNodeById(schema, fieldId) : null
+  const field = fieldId ? findNode(schema, fieldId) : null
   const config = fieldId ? fieldConfigs[fieldId] : undefined
   const binding = fieldId ? bindings[fieldId] : undefined
 
@@ -93,6 +81,8 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
     const maxNum = maxValue !== '' ? Number(maxValue) : undefined
     const minItemsNum = minItems !== '' ? Number(minItems) : undefined
     const maxItemsNum = maxItems !== '' ? Number(maxItems) : undefined
+
+    configUpdate.constraints = undefined
 
     if (fieldType === 'string') {
       const constraints: NonNullable<FieldConfig['constraints']> = {}

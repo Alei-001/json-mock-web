@@ -122,7 +122,9 @@ function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit
     <div
       className={classes}
       role="treeitem"
-      tabIndex={0}
+      tabIndex={selected ? 0 : -1}
+      aria-expanded={expandable ? expanded : undefined}
+      aria-selected={selected || undefined}
       style={{ paddingLeft: indent }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -333,6 +335,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const dragging = useRef(false)
   const startY = useRef(0)
   const startH = useRef(0)
+  const userEditingRef = useRef(false)
 
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -400,18 +403,17 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   }, [schema, fieldConfigs])
 
   const handleTabChange = useCallback((tab: 'visual' | 'text') => {
-    if (tab === 'text') {
-      setEditorText(jsonSchemaText)
-      setParseError(null)
-    }
     setActiveTab(tab)
-  }, [jsonSchemaText])
+    userEditingRef.current = false
+  }, [])
 
   const handleEditorChange = useCallback((value: string) => {
+    userEditingRef.current = true
     setEditorText(value)
     const success = importJsonSchema(value)
     if (!success) {
       setParseError(t('schemaEditor.parseError'))
+      queueMicrotask(() => { userEditingRef.current = false })
     } else {
       setParseError(null)
     }
@@ -436,6 +438,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     }
     showToast(t('schemaEditor.cleared'))
   }, [clearSchema, selectField, activeTab, showToast, t])
+
+  useEffect(() => {
+    if (activeTab === 'text' && !userEditingRef.current) {
+      setEditorText(jsonSchemaText)
+      setParseError(null)
+    }
+    userEditingRef.current = false
+  }, [jsonSchemaText, activeTab])
 
   const nodes = useMemo(
     () =>
@@ -481,14 +491,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
-                  {t('schemaEditor.exportTemplate')}
+                  <span>{t('schemaEditor.exportTemplate')}</span>
                 </button>
                 <button className="btn-sm" onClick={handleClear}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                   </svg>
-                  {t('schemaEditor.clear')}
+                  <span>{t('schemaEditor.clear')}</span>
                 </button>
               </>
             )}
@@ -498,14 +508,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                 </svg>
-                {t('schemaEditor.clear')}
+                <span>{t('schemaEditor.clear')}</span>
               </button>
             )}
           </div>
         </div>
 
         {activeTab === 'visual' && (
-          <div className={styles.tree}>
+          <div className={styles.tree} role="tree">
             {nodes}
           </div>
         )}

@@ -93,7 +93,6 @@ export default function Select({ value, onChange, options, disabled = false, pla
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-labelledby={listboxId}
       >
         <span className={styles.value}>
           {selected ? selected.label : (value || resolvedPlaceholder)}

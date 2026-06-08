@@ -23,6 +23,7 @@ function highlightLine(line: string): ReactNode[] {
   let lastIndex = 0
   let key = 0
 
+  // eslint-disable-next-line no-useless-escape
   const regex = /("(?:[^"\\]|\\.)*")\s*:|("(?:[^"\\]|\\.)*")|\b(true|false)\b|\b(null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}\[\]])|(.)/g
 
   let match: RegExpExecArray | null

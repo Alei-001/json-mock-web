@@ -133,8 +133,10 @@ function computeFieldValue(
 
   // Custom strategy with regex pattern — must be compatible
   if (strategy?.isCustom && strategy.fieldTypes.includes(field.type) && config?.constraints?.pattern) {
-    const pattern = config.constraints.pattern.replace(/^\^/, '').replace(/\$$/, '')
-    return faker.helpers.fromRegExp(pattern)
+    let pattern = config.constraints.pattern
+    if (pattern.startsWith('^')) pattern = pattern.slice(1)
+    if (pattern.endsWith('$')) pattern = pattern.slice(0, -1)
+    if (pattern.length > 0) return faker.helpers.fromRegExp(pattern)
   }
 
   // Fallback by field type
@@ -210,6 +212,8 @@ export function generateData(
   } else {
     faker.seed()
   }
+
+  sequentialCounter.clear()
 
   const count = Math.max(1, Math.min(config.count || 1, MAX_GENERATE_COUNT))
 
