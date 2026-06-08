@@ -73,7 +73,7 @@ function generateFieldValue(
     const ds = dataSources.find((d) => d.id === binding.dataSourceId)
     if (ds && ds.data.length > 0) {
       if (binding.strategy === 'random') {
-        return ds.data[Math.floor(Math.random() * ds.data.length)]
+        return faker.helpers.arrayElement(ds.data)
       }
       // sequential: cycles through items per generation session
       const index = sequentialCounter.get(binding.dataSourceId) ?? 0
@@ -84,7 +84,7 @@ function generateFieldValue(
 
   const value = computeFieldValue(field, config, fieldConfigs, dataSources, bindings)
   const nullProb = config?.nullProbability
-  if (nullProb && nullProb > 0 && Math.random() * 100 < nullProb) {
+  if (nullProb && nullProb > 0 && faker.number.float({ min: 0, max: 100, fractionDigits: 4 }) < nullProb) {
     return null
   }
   return value
@@ -164,8 +164,8 @@ function computeFieldValue(
       switch (boolStrategy) {
         case 'alwaysTrue': return true
         case 'alwaysFalse': return false
-        case 'mostlyTrue': return Math.random() < 0.8
-        case 'mostlyFalse': return Math.random() < 0.2
+        case 'mostlyTrue': return faker.datatype.boolean({ probability: 0.8 })
+        case 'mostlyFalse': return faker.datatype.boolean({ probability: 0.2 })
         default: return faker.datatype.boolean()
       }
     }
@@ -182,7 +182,7 @@ function generateObject(field: SchemaField, fieldConfigs: Record<string, FieldCo
   const result: Record<string, unknown> = {}
   if (field.children) {
     for (const child of field.children) {
-      if (!child.required && Math.random() < OMIT_OPTIONAL_RATE) continue
+      if (!child.required && faker.number.float({ min: 0, max: 1, fractionDigits: 4 }) < OMIT_OPTIONAL_RATE) continue
       result[child.name] = generateFieldValue(child, fieldConfigs[child.id], fieldConfigs, dataSources, bindings)
     }
   }
@@ -208,7 +208,16 @@ export function generateData(
   bindings: Record<string, Binding> = {},
 ): unknown {
   if (config.seed) {
-    faker.seed(Number(config.seed))
+    const num = Number(config.seed)
+    if (!isNaN(num)) {
+      faker.seed(num)
+    } else {
+      let hash = 0
+      for (let i = 0; i < config.seed.length; i++) {
+        hash = ((hash << 5) - hash + config.seed.charCodeAt(i)) | 0
+      }
+      faker.seed(hash)
+    }
   } else {
     faker.seed()
   }
@@ -229,7 +238,7 @@ function generateFromRoot(schema: SchemaField, fieldConfigs: Record<string, Fiel
     const result: Record<string, unknown> = {}
     if (schema.children) {
       for (const child of schema.children) {
-        if (!child.required && Math.random() < OMIT_OPTIONAL_RATE) continue
+        if (!child.required && faker.number.float({ min: 0, max: 1, fractionDigits: 4 }) < OMIT_OPTIONAL_RATE) continue
         result[child.name] = generateFieldValue(child, fieldConfigs[child.id], fieldConfigs, dataSources, bindings)
       }
     }

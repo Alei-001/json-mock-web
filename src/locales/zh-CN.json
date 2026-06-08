@@ -8,7 +8,8 @@
     "export": "导出",
     "itemSuffix": "条",
     "placeholder": "请选择",
-    "filename": "文件名"
+    "filename": "文件名",
+    "more": "更多"
   },
   "topbar": {
     "templates": "模板库",
@@ -36,10 +37,16 @@
     "advancedOptions": "高级选项",
     "seed": "随机种子",
     "seedPlaceholder": "可选，用于复现相同数据",
-    "regenerate": "重新生成",
+    "regenerate": "生成",
+    "autoPreview": "实时预览",
+    "moreActions": "更多操作",
     "exportedTemplate": "已导出模板",
     "cleared": "已清空",
-    "parseError": "JSON 解析失败，请检查格式是否正确"
+    "parseError": "JSON 解析失败，请检查格式是否正确",
+    "saveTemplate": "保存模板",
+    "saveTemplateTitle": "保存为模板",
+    "templateName": "模板名称",
+    "templateSaved": "模板已保存"
   },
   "fieldConfig": {
     "title": "字段配置",
@@ -86,7 +93,10 @@
   "template": {
     "title": "模板库",
     "subtitle": "选择一个预设模板开始",
-    "loaded": "已加载「{{name}}」模板"
+    "loaded": "已加载「{{name}}」模板",
+    "customTitle": "自定义模板",
+    "delete": "删除",
+    "deleted": "已删除"
   },
   "dataPreview": {
     "copied": "已复制到剪贴板",
@@ -96,6 +106,10 @@
     "copy": "复制 JSON",
     "downloadJson": "下载 JSON",
     "downloadCsv": "下载 CSV",
+    "regenerate": "重新生成",
+    "json": "JSON",
+    "table": "表格",
+    "itemCount": "{{count}} 条",
     "placeholder": "点击「重新生成」查看数据"
   },
   "welcome": {

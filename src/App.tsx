@@ -21,10 +21,18 @@ function App() {
   const toastMessage = useProjectStore((s) => s.toastMessage)
   const theme = useProjectStore((s) => s.theme)
   const hasSeenWelcome = useProjectStore((s) => s.hasSeenWelcome)
+  const schema = useProjectStore((s) => s.schema)
+  const dismissWelcome = useProjectStore((s) => s.dismissWelcome)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    if (!hasSeenWelcome && schema.children && schema.children.length > 0) {
+      dismissWelcome()
+    }
+  }, [hasSeenWelcome, schema, dismissWelcome])
 
   const handleEditField = useCallback(() => setFieldModalOpen(true), [])
   const handleCloseFieldModal = useCallback(() => setFieldModalOpen(false), [])

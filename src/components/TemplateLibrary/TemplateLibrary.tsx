@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import styles from './TemplateLibrary.module.css'
 import { useProjectStore } from '../../store/useProjectStore'
 import { PRESET_TEMPLATES } from '../../constants/templates'
+import type { PresetTemplate } from '../../constants/templates'
 
 const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
   user: (
@@ -40,6 +41,14 @@ const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
       <path d="M8 14h8" />
     </svg>
   ),
+  custom: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="18" x2="12" y2="12" />
+      <line x1="9" y1="15" x2="15" y2="15" />
+    </svg>
+  ),
 }
 
 interface TemplateLibraryProps {
@@ -49,38 +58,85 @@ interface TemplateLibraryProps {
 export default function TemplateLibrary({ onSelect }: TemplateLibraryProps) {
   const { t } = useTranslation()
   const loadSchema = useProjectStore((s) => s.loadSchema)
+  const customTemplates = useProjectStore((s) => s.customTemplates)
+  const removeCustomTemplate = useProjectStore((s) => s.removeCustomTemplate)
   const showToast = useProjectStore((s) => s.showToast)
 
-  const handleSelect = useCallback((id: string) => {
-    const template = PRESET_TEMPLATES.find((tmpl) => tmpl.id === id)
-    if (!template) return
+  const handleSelect = useCallback((template: PresetTemplate, isCustom: boolean) => {
     loadSchema(template.schema, template.fieldConfigs)
-    showToast(t('template.loaded', { name: t(template.name) }))
+    showToast(t('template.loaded', { name: isCustom ? template.name : t(template.name) }))
     onSelect()
   }, [loadSchema, onSelect, showToast, t])
 
+  const handleDelete = useCallback((e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation()
+    removeCustomTemplate(id)
+    showToast(t('template.deleted', { name }))
+  }, [removeCustomTemplate, showToast, t])
+
   return (
-    <div className={styles.tmplGrid}>
-      {PRESET_TEMPLATES.map((tmpl) => (
-        <div
-          key={tmpl.id}
-          className={styles.tmplCard}
-          tabIndex={0}
-          role="button"
-          onClick={() => handleSelect(tmpl.id)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSelect(tmpl.id)
-          }}
-        >
-          <div className={styles.tmplCardHeader}>
-            <div className={styles.tmplIcon}>
-              {TEMPLATE_ICONS[tmpl.id]}
+    <div className={styles.container}>
+      <div className={styles.section}>
+        <div className={styles.tmplGrid}>
+          {PRESET_TEMPLATES.map((tmpl) => (
+            <div
+              key={tmpl.id}
+              className={styles.tmplCard}
+              tabIndex={0}
+              role="button"
+              onClick={() => handleSelect(tmpl, false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSelect(tmpl, false)
+              }}
+            >
+              <div className={styles.tmplCardHeader}>
+                <div className={styles.tmplIcon}>
+                  {TEMPLATE_ICONS[tmpl.id]}
+                </div>
+                <span className={styles.tmplName}>{t(tmpl.name)}</span>
+              </div>
+              <div className={styles.tmplDesc}>{t(tmpl.description)}</div>
             </div>
-            <span className={styles.tmplName}>{t(tmpl.name)}</span>
-          </div>
-          <div className={styles.tmplDesc}>{t(tmpl.description)}</div>
+          ))}
         </div>
-      ))}
+      </div>
+      {customTemplates.length > 0 && (
+        <div className={styles.section}>
+          <div className={styles.sectionTitle}>{t('template.customTitle')}</div>
+          <div className={styles.tmplGrid}>
+            {customTemplates.map((tmpl) => (
+              <div
+                key={tmpl.id}
+                className={styles.tmplCard}
+                tabIndex={0}
+                role="button"
+                onClick={() => handleSelect(tmpl, true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSelect(tmpl, true)
+                }}
+              >
+                <div className={styles.tmplCardHeader}>
+                  <div className={styles.tmplIcon}>
+                    {TEMPLATE_ICONS.custom}
+                  </div>
+                  <span className={styles.tmplName}>{tmpl.name}</span>
+                </div>
+                <div className={styles.tmplDesc}>{tmpl.description}</div>
+                <button
+                  className={styles.tmplDelete}
+                  onClick={(e) => handleDelete(e, tmpl.id, tmpl.name)}
+                  title={t('template.delete')}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

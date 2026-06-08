@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { SchemaField, FieldConfig, GenerationConfig, FieldType, DataSource, Binding } from '../types'
 import { MAX_GENERATE_COUNT } from '../types'
+import type { PresetTemplate } from '../constants/templates'
 import { demoSchema, demoFieldConfigs, demoGenerationConfig } from '../constants/demoSchema'
 import { generateData } from '../utils/generator'
 import { jsonSchemaToSchemaField } from '../utils/schemaConverter'
@@ -70,6 +71,8 @@ interface ProjectState {
   dataSources: DataSource[]
   bindings: Record<string, Binding>
   toastMessage: string | null
+  customTemplates: PresetTemplate[]
+  autoPreview: boolean
 
   dismissWelcome: () => void
   resetWelcome: () => void
@@ -90,7 +93,10 @@ interface ProjectState {
   removeDataSource: (id: string) => void
   bindField: (fieldId: string, dataSourceId: string, strategy: 'random' | 'sequential') => void
   unbindField: (fieldId: string) => void
+  addCustomTemplate: (template: PresetTemplate) => void
+  removeCustomTemplate: (id: string) => void
   showToast: (message: string) => void
+  toggleAutoPreview: () => void
 }
 
 export const useProjectStore = create<ProjectState>()(
@@ -106,6 +112,8 @@ export const useProjectStore = create<ProjectState>()(
       dataSources: [],
       bindings: {},
       toastMessage: null,
+      customTemplates: [],
+      autoPreview: false,
 
   selectField: (id) => {
     set({ selectedFieldId: id })
@@ -283,6 +291,24 @@ export const useProjectStore = create<ProjectState>()(
     })
   },
 
+  addCustomTemplate: (template) => {
+    set((state) => {
+      const idx = state.customTemplates.findIndex((t) => t.name === template.name)
+      if (idx >= 0) {
+        const updated = [...state.customTemplates]
+        updated[idx] = template
+        return { customTemplates: updated }
+      }
+      return { customTemplates: [...state.customTemplates, template] }
+    })
+  },
+
+  removeCustomTemplate: (id) => {
+    set((state) => ({
+      customTemplates: state.customTemplates.filter((t) => t.id !== id),
+    }))
+  },
+
   showToast: (message) => {
     if (toastTimer) clearTimeout(toastTimer)
     set({ toastMessage: message })
@@ -298,6 +324,10 @@ export const useProjectStore = create<ProjectState>()(
   toggleTheme: () => {
     set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' }))
   },
+
+  toggleAutoPreview: () => {
+    set((state) => ({ autoPreview: !state.autoPreview }))
+  },
 }),
 {
   name: 'json-mock-project',
@@ -309,6 +339,7 @@ export const useProjectStore = create<ProjectState>()(
       generationConfig: state.generationConfig,
       dataSources: state.dataSources,
       bindings: state.bindings,
+      customTemplates: state.customTemplates,
     }),
   onRehydrateStorage: () => (state) => {
       if (state && state.generationConfig.count > MAX_GENERATE_COUNT) {

@@ -41,7 +41,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  box-shadow: 0 8px 24px oklch(0.450 0.150 20.0 / 0.25);
+  box-shadow: 0 8px 24px var(--primary-20);
 }
 
 .logoMark svg {
@@ -184,7 +184,7 @@
 .ctaPrimary:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px oklch(0.450 0.150 20.0 / 0.3);
+  box-shadow: 0 4px 12px var(--primary-20);
 }
 
 .ctaPrimary:focus-visible {

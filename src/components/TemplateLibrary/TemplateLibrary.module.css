@@ -1,3 +1,22 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section {
+
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
 .tmpl-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -14,6 +33,7 @@
   cursor: pointer;
   transition: all 150ms ease-out;
   gap: 8px;
+  position: relative;
 }
 
 .tmpl-card:hover {
@@ -75,4 +95,37 @@
   border-radius: 3px;
   background: var(--surface);
   color: var(--ink-secondary);
+}
+
+.tmpl-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0;
+  transition: all 150ms ease-out;
+  opacity: 0;
+}
+
+.tmpl-delete:hover {
+  background: var(--error);
+  color: white;
+}
+
+.tmpl-card:hover .tmpl-delete {
+  opacity: 1;
+}
+
+.tmpl-delete svg {
+  width: 14px;
+  height: 14px;
 }

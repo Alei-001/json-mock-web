@@ -8,7 +8,8 @@
     "export": "Export",
     "itemSuffix": "",
     "placeholder": "Select...",
-    "filename": "Filename"
+    "filename": "Filename",
+    "more": "More"
   },
   "topbar": {
     "templates": "Templates",
@@ -36,10 +37,16 @@
     "advancedOptions": "Advanced",
     "seed": "Seed",
     "seedPlaceholder": "Optional, for reproducible data",
-    "regenerate": "Regenerate",
+    "regenerate": "Generate",
+    "autoPreview": "Auto Preview",
+    "moreActions": "More Actions",
     "exportedTemplate": "Template exported",
     "cleared": "Cleared",
-    "parseError": "JSON parse failed, please check the format"
+    "parseError": "JSON parse failed, please check the format",
+    "saveTemplate": "Save Template",
+    "saveTemplateTitle": "Save as Template",
+    "templateName": "Template Name",
+    "templateSaved": "Template saved"
   },
   "fieldConfig": {
     "title": "Field Config",
@@ -86,7 +93,10 @@
   "template": {
     "title": "Template Library",
     "subtitle": "Choose a preset template to start",
-    "loaded": "Loaded \"{{name}}\" template"
+    "loaded": "Loaded \"{{name}}\" template",
+    "customTitle": "Custom Templates",
+    "delete": "Delete",
+    "deleted": "Template deleted"
   },
   "dataPreview": {
     "copied": "Copied to clipboard",
@@ -96,6 +106,10 @@
     "copy": "Copy JSON",
     "downloadJson": "Download JSON",
     "downloadCsv": "Download CSV",
+    "regenerate": "Regenerate",
+    "json": "JSON",
+    "table": "Table",
+    "itemCount": "{{count}} items",
     "placeholder": "Click 'Regenerate' to view data"
   },
   "welcome": {

@@ -10,6 +10,15 @@ import { getStrategyById } from '../../constants/strategies'
 import i18n from '../../i18n'
 import type { SchemaField, FieldType, FieldConfig, DataSource, Binding } from '../../types'
 import { MAX_GENERATE_COUNT } from '../../types'
+import type { PresetTemplate } from '../../constants/templates'
+
+const moreIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="5" r="1" />
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="19" r="1" />
+  </svg>
+)
 
 /* ─── Type Icons ─── */
 
@@ -81,7 +90,7 @@ function TreeNode({ field, depth, selected, isRoot, configTags, onSelect, onEdit
   const { t } = useTranslation()
   const expandable = field.type === 'object' || field.type === 'array'
   const expanded = !field.collapsed
-  const indent = 8 + depth * 24
+  const indent = 8 + depth * 20
   const classes = [
     styles.treeNode,
     field.required ? styles.required : '',
@@ -319,53 +328,29 @@ interface SchemaEditorProps {
   onEditField: (id: string) => void
 }
 
-const GEN_FOOTER_MIN = 120
-const GEN_FOOTER_MAX = 400
-const GEN_FOOTER_DEFAULT = 200
-
 export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'visual' | 'text'>('visual')
   const [editorText, setEditorText] = useState('')
   const [parseError, setParseError] = useState<string | null>(null)
   const [advancedOpen, setAdvancedOpen] = useState(false)
-  const [footerHeight, setFooterHeight] = useState(GEN_FOOTER_DEFAULT)
   const [exportOpen, setExportOpen] = useState(false)
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef(false)
-  const startY = useRef(0)
-  const startH = useRef(0)
   const userEditingRef = useRef(false)
 
-  const handleDragStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    dragging.current = true
-    startY.current = e.clientY
-    startH.current = footerHeight
-    document.body.style.cursor = 'ns-resize'
-    document.body.style.userSelect = 'none'
-  }, [footerHeight])
-
   useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!dragging.current) return
-      const delta = startY.current - e.clientY
-      const next = Math.min(GEN_FOOTER_MAX, Math.max(GEN_FOOTER_MIN, startH.current + delta))
-      setFooterHeight(next)
+    if (!moreMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setMoreMenuOpen(false)
+      }
     }
-    const onMouseUp = () => {
-      if (!dragging.current) return
-      dragging.current = false
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
-  }, [])
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [moreMenuOpen])
 
   const schema = useProjectStore((s) => s.schema)
   const fieldConfigs = useProjectStore((s) => s.fieldConfigs)
@@ -382,6 +367,10 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const showToast = useProjectStore((s) => s.showToast)
   const bindings = useProjectStore((s) => s.bindings)
   const dataSources = useProjectStore((s) => s.dataSources)
+  const addCustomTemplate = useProjectStore((s) => s.addCustomTemplate)
+  const autoPreview = useProjectStore((s) => s.autoPreview)
+  const toggleAutoPreview = useProjectStore((s) => s.toggleAutoPreview)
+  const prevAutoPreview = useRef(autoPreview)
 
   const handleCountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const v = Number(e.target.value)
@@ -423,6 +412,23 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     setExportOpen(true)
   }, [])
 
+  const handleSaveTemplate = useCallback(() => {
+    setSaveTemplateOpen(true)
+  }, [])
+
+  const handleSaveTemplateConfirm = useCallback((name: string) => {
+    const template: PresetTemplate = {
+      id: `custom-${Date.now()}`,
+      name,
+      description: '',
+      schema: JSON.parse(JSON.stringify(schema)),
+      fieldConfigs: JSON.parse(JSON.stringify(fieldConfigs)),
+    }
+    addCustomTemplate(template)
+    showToast(t('schemaEditor.templateSaved'))
+    setSaveTemplateOpen(false)
+  }, [schema, fieldConfigs, addCustomTemplate, showToast, t])
+
   const handleExportConfirm = useCallback((filename: string) => {
     const jsonSchema = schemaFieldToJsonSchema(schema, fieldConfigs)
     downloadJson(jsonSchema, filename)
@@ -447,6 +453,14 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     userEditingRef.current = false
   }, [jsonSchemaText, activeTab])
 
+  useEffect(() => {
+    const justToggledOn = !prevAutoPreview.current && autoPreview
+    prevAutoPreview.current = autoPreview
+    if (autoPreview && !justToggledOn) {
+      generate()
+    }
+  }, [jsonSchemaText, fieldConfigs, autoPreview, generate])
+
   const nodes = useMemo(
     () =>
       renderTreeNodes(
@@ -470,48 +484,63 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
               <button className={`tab ${activeTab === 'text' ? 'active' : ''}`} onClick={() => handleTabChange('text')}>
                 {t('schemaEditor.text')}
               </button>
-</div>
-      <PromptDialog
-        key={exportOpen ? 'open' : 'closed'}
-        open={exportOpen}
-        title={t('schemaEditor.exportTemplate')}
-        label={t('common.filename')}
-        defaultValue="schema"
-        suffix=".json"
-        onConfirm={handleExportConfirm}
-        onClose={() => setExportOpen(false)}
-      />
-    </div>
+            </div>
+          </div>
           <div className="card-actions-header">
+            <button className="btn-sm danger" onClick={handleClear}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+              </svg>
+              <span>{t('schemaEditor.clear')}</span>
+            </button>
             {activeTab === 'visual' && (
-              <>
-                <button className="btn-sm" onClick={handleExport}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  <span>{t('schemaEditor.exportTemplate')}</span>
+              <div className={styles.moreMenuWrap} ref={moreMenuRef}>
+                <button className="btn-sm" onClick={() => setMoreMenuOpen(!moreMenuOpen)} title={t('schemaEditor.moreActions')}>
+                  {moreIcon}
                 </button>
-                <button className="btn-sm" onClick={handleClear}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                  </svg>
-                  <span>{t('schemaEditor.clear')}</span>
-                </button>
-              </>
-            )}
-            {activeTab === 'text' && (
-              <button className="btn-sm" onClick={handleClear}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                </svg>
-                <span>{t('schemaEditor.clear')}</span>
-              </button>
+                {moreMenuOpen && (
+                  <div className={styles.moreDropdown}>
+                    <button className={styles.moreItem} onClick={() => { setMoreMenuOpen(false); handleExport() }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      {t('schemaEditor.exportTemplate')}
+                    </button>
+                    <button className={styles.moreItem} onClick={() => { setMoreMenuOpen(false); handleSaveTemplate() }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                      </svg>
+                      {t('schemaEditor.saveTemplate')}
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
+          <PromptDialog
+            key={exportOpen ? 'open' : 'closed'}
+            open={exportOpen}
+            title={t('schemaEditor.exportTemplate')}
+            label={t('common.filename')}
+            defaultValue="schema"
+            suffix=".json"
+            onConfirm={handleExportConfirm}
+            onClose={() => setExportOpen(false)}
+          />
+          <PromptDialog
+            key={saveTemplateOpen ? 'save-open' : 'save-closed'}
+            open={saveTemplateOpen}
+            title={t('schemaEditor.saveTemplateTitle')}
+            label={t('schemaEditor.templateName')}
+            defaultValue=""
+            onConfirm={handleSaveTemplateConfirm}
+            onClose={() => setSaveTemplateOpen(false)}
+          />
         </div>
 
         {activeTab === 'visual' && (
@@ -539,67 +568,62 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
           </>
         )}
 
-        <div className={styles.genFooter} ref={footerRef} style={{ height: footerHeight }}>
-          <div className={styles.genHandle} onMouseDown={handleDragStart} />
-          <div className={styles.genSection}>
-            {/* 生成数量 */}
-            <div className={styles.genField}>
-              <div className={styles.genLabelRow}>
-                <label className={styles.genLabel}>{t('schemaEditor.generateCount')}</label>
-                {generationConfig.count > MAX_GENERATE_COUNT && (
-                  <span className={styles.genWarn}>{t('schemaEditor.maxItems', { count: MAX_GENERATE_COUNT })}</span>
-                )}
-              </div>
+        <div className={styles.genFooter} ref={footerRef}>
+          <div className={styles.genToolbar}>
+            <div className={styles.genCountGroup}>
+              <label className={styles.genLabel}>{t('schemaEditor.generateCount')}</label>
               <input
                 type="number"
-                className="form-input"
+                className={`form-input ${styles.genInput}`}
                 value={generationConfig.count}
                 min={1}
                 max={MAX_GENERATE_COUNT}
                 onChange={handleCountChange}
               />
+              {generationConfig.count > MAX_GENERATE_COUNT && (
+                <span className={styles.genWarn}>{t('schemaEditor.maxItems', { count: MAX_GENERATE_COUNT })}</span>
+              )}
             </div>
-
-            {/* 高级选项折叠 */}
-            <button
-              className={styles.genToggle}
-              onClick={() => setAdvancedOpen(!advancedOpen)}
-            >
-              <svg
-                className={`${styles.genToggleIcon} ${advancedOpen ? styles.genToggleOpen : ''}`}
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-              <span>{t('schemaEditor.advancedOptions')}</span>
-            </button>
-
-            {/* 高级选项内容 */}
-            {advancedOpen && (
-              <div className={styles.genAdvanced}>
-                <div className={styles.genField}>
-                  <label className={styles.genLabel}>{t('schemaEditor.seed')}</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder={t('schemaEditor.seedPlaceholder')}
-                    value={generationConfig.seed}
-                    onChange={(e) => updateGenerationConfig({ seed: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
+            <div className={styles.genActions}>
+              <button className="btn-primary" onClick={generate}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                </svg>
+                {t('schemaEditor.regenerate')}
+              </button>
+            </div>
           </div>
 
-          {/* 重新生成按钮 */}
-          <div className={styles.genAction}>
-            <button className="btn-sm primary" onClick={generate}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 4 23 10 17 10" />
-                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-              </svg>
-              {t('schemaEditor.regenerate')}
-            </button>
+          <button
+            className={`${styles.genAdvTrigger} ${advancedOpen ? styles.open : ''}`}
+            onClick={() => setAdvancedOpen(!advancedOpen)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span>{t('schemaEditor.advancedOptions')}</span>
+          </button>
+
+          <div className={`${styles.genAdvancedPanel} ${advancedOpen ? styles.open : ''}`}>
+            <div className={styles.genField}>
+              <label className={styles.genLabel}>{t('schemaEditor.seed')}</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder={t('schemaEditor.seedPlaceholder')}
+                value={generationConfig.seed}
+                onChange={(e) => updateGenerationConfig({ seed: e.target.value })}
+              />
+            </div>
+            <div className={styles.genToggleRow}>
+              <span className={styles.genToggleText}>{t('schemaEditor.autoPreview')}</span>
+              <button
+                className={`${styles.genToggle} ${autoPreview ? styles.active : ''}`}
+                aria-label={t('schemaEditor.autoPreview')}
+                onClick={() => toggleAutoPreview()}
+              />
+            </div>
           </div>
         </div>
       </div>
