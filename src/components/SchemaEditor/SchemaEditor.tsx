@@ -8,7 +8,6 @@ import { useProjectStore } from '../../store/useProjectStore'
 import { schemaFieldToJsonSchema } from '../../utils/schemaConverter'
 import { downloadJson } from '../../utils/export'
 import { getStrategyById } from '../../constants/strategies'
-import i18n from '../../i18n'
 import type { SchemaField, FieldType, FieldConfig, DataSource, Binding } from '../../types'
 import { MAX_GENERATE_COUNT } from '../../types'
 import type { PresetTemplate } from '../../constants/templates'
@@ -225,13 +224,14 @@ function computeConfigTags(
   fieldConfigs: Record<string, FieldConfig>,
   bindings: Record<string, Binding>,
   dataSources: DataSource[],
+  t: (key: string) => string,
 ): React.ReactNode[] {
   const tags: React.ReactNode[] = []
   const config = fieldConfigs[field.id]
 
   if (config?.fakerType) {
     const info = getStrategyById(config.fakerType)
-    if (info) tags.push(i18n.t(info.label))
+    if (info) tags.push(t(info.label))
   }
 
   if (config?.nullProbability && config.nullProbability > 0) {
@@ -251,9 +251,9 @@ function computeConfigTags(
       else if (c.maximum != null) tags.push(`≤${c.maximum}`)
     }
     if (field.type === 'array') {
-      if (c.minItems != null && c.maxItems != null) tags.push(`${c.minItems}~${c.maxItems}${i18n.t('schemaEditor.itemCount')}`)
-      else if (c.minItems != null) tags.push(`≥${c.minItems}${i18n.t('schemaEditor.itemCount')}`)
-      else if (c.maxItems != null) tags.push(`≤${c.maxItems}${i18n.t('schemaEditor.itemCount')}`)
+      if (c.minItems != null && c.maxItems != null) tags.push(`${c.minItems}~${c.maxItems}${t('schemaEditor.itemCount')}`)
+      else if (c.minItems != null) tags.push(`≥${c.minItems}${t('schemaEditor.itemCount')}`)
+      else if (c.maxItems != null) tags.push(`≤${c.maxItems}${t('schemaEditor.itemCount')}`)
     }
   }
 
@@ -288,12 +288,13 @@ function renderTreeNodes(
   fieldConfigs: Record<string, FieldConfig>,
   bindings: Record<string, Binding>,
   dataSources: DataSource[],
+  t: (key: string) => string,
 ): React.ReactNode[] {
   const nodes: React.ReactNode[] = []
   const expandable = field.type === 'object' || field.type === 'array'
   const expanded = !field.collapsed
 
-  const configTags = computeConfigTags(field, fieldConfigs, bindings, dataSources)
+  const configTags = computeConfigTags(field, fieldConfigs, bindings, dataSources, t)
 
   nodes.push(
     <TreeNode
@@ -314,11 +315,11 @@ function renderTreeNodes(
   if (expandable && expanded) {
     if (field.children) {
       for (const child of field.children) {
-        nodes.push(...renderTreeNodes(child, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove, fieldConfigs, bindings, dataSources))
+        nodes.push(...renderTreeNodes(child, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove, fieldConfigs, bindings, dataSources, t))
       }
     }
     if (field.type === 'array' && field.items) {
-      nodes.push(...renderTreeNodes(field.items, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove, fieldConfigs, bindings, dataSources))
+      nodes.push(...renderTreeNodes(field.items, depth + 1, selectedFieldId, onSelect, onEdit, onToggle, onAdd, onRemove, fieldConfigs, bindings, dataSources, t))
     }
   }
 
@@ -467,9 +468,9 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
       renderTreeNodes(
         schema, 0, selectedFieldId, handleSelect, handleEdit,
         toggleFieldCollapsed, addField, removeField,
-        fieldConfigs, bindings, dataSources,
+        fieldConfigs, bindings, dataSources, t,
       ),
-    [schema, selectedFieldId, fieldConfigs, bindings, dataSources, handleSelect, handleEdit, toggleFieldCollapsed, addField, removeField],
+    [schema, selectedFieldId, fieldConfigs, bindings, dataSources, handleSelect, handleEdit, toggleFieldCollapsed, addField, removeField, t],
   )
 
   return (
