@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://json-mock-web.pages.dev/sitemap.xml
