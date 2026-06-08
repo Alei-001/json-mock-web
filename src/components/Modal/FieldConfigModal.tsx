@@ -59,7 +59,10 @@ export default function FieldConfigModal({ open, fieldId, onClose }: FieldConfig
       setRequired(field.required)
 
       const config = fieldId ? fieldConfigs[fieldId] : undefined
-      const savedStrategy = (config?.fakerType ?? '') || getStrategiesForType(field.type as FieldType)[0]?.id || ''
+      const savedStrategy = (config?.fakerType ?? '')
+        || (config?.constraints?.pattern ? 'custom' : '')
+        || getStrategiesForType(field.type as FieldType)[0]?.id
+        || ''
       setStrategy(savedStrategy)
       setMinValue(config?.constraints?.minimum?.toString() ?? config?.constraints?.minLength?.toString() ?? '')
       setMaxValue(config?.constraints?.maximum?.toString() ?? config?.constraints?.maxLength?.toString() ?? '')

@@ -118,7 +118,10 @@ function jsonSchemaToField(
   if (normalizedType === 'string') {
     if (schema.minLength != null) config.constraints = { ...config.constraints, minLength: schema.minLength as number }
     if (schema.maxLength != null) config.constraints = { ...config.constraints, maxLength: schema.maxLength as number }
-    if (schema.pattern) config.constraints = { ...config.constraints, pattern: schema.pattern as string }
+    if (schema.pattern) {
+      config.constraints = { ...config.constraints, pattern: schema.pattern as string }
+      if (!config.fakerType) config.fakerType = 'custom'
+    }
   }
 
   if (normalizedType === 'number' || normalizedType === 'integer') {

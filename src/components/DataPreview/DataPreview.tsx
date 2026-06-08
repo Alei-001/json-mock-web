@@ -1,5 +1,6 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import styles from './DataPreview.module.css'
 import { useProjectStore } from '../../store/useProjectStore'
 import { highlightJson } from '../../utils/syntaxHighlight'
@@ -84,17 +85,40 @@ export default function DataPreview() {
 
 function JsonPreview({ data }: { data: unknown }) {
   const lines = useMemo(() => highlightJson(data), [data])
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: lines.length,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => 22,
+    overscan: 20,
+  })
 
   return (
-    <div className={styles.jsonPreview}>
-      {lines.map((line) => (
-        <div className={styles.jsonLine} key={line.num}>
-          <span className={styles.jsonLineNum}>{line.num}</span>
-          <span className={styles.jsonContent}>
-            {line.content}
-          </span>
-        </div>
-      ))}
+    <div ref={containerRef} className={styles.jsonPreview}>
+      <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
+        {virtualizer.getVirtualItems().map((vr) => {
+          const line = lines[vr.index]
+          return (
+            <div
+              key={vr.key}
+              data-index={vr.index}
+              ref={virtualizer.measureElement}
+              className={styles.jsonLine}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${vr.start}px)`,
+              }}
+            >
+              <span className={styles.jsonLineNum}>{line.num}</span>
+              <span className={styles.jsonContent}>{line.content}</span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

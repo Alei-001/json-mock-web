@@ -133,7 +133,8 @@ function computeFieldValue(
 
   // Custom strategy with regex pattern — must be compatible
   if (strategy?.isCustom && strategy.fieldTypes.includes(field.type) && config?.constraints?.pattern) {
-    return faker.helpers.fromRegExp(config.constraints.pattern)
+    const pattern = config.constraints.pattern.replace(/^\^/, '').replace(/\$$/, '')
+    return faker.helpers.fromRegExp(pattern)
   }
 
   // Fallback by field type

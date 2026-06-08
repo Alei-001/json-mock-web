@@ -1,6 +1,6 @@
 export type FieldType = 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null'
 
-export const MAX_GENERATE_COUNT = 100
+export const MAX_GENERATE_COUNT = 1000
 
 export interface SchemaField {
   id: string
