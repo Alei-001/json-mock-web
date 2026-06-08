@@ -496,7 +496,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
             </button>
             {activeTab === 'visual' && (
               <div className={styles.moreMenuWrap} ref={moreMenuRef}>
-                <button className="btn-sm" onClick={() => setMoreMenuOpen(!moreMenuOpen)} title={t('schemaEditor.moreActions')}>
+                <button className={`btn-sm ${styles.moreBtn}`} onClick={() => setMoreMenuOpen(!moreMenuOpen)} title={t('schemaEditor.moreActions')}>
                   {moreIcon}
                 </button>
                 {moreMenuOpen && (

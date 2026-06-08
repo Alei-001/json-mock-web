@@ -228,6 +228,10 @@
   position: relative;
 }
 
+.more-btn {
+  padding: 6px !important;
+}
+
 .more-dropdown {
   position: absolute;
   top: calc(100% + 6px);
