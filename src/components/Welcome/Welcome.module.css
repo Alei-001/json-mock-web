@@ -121,41 +121,6 @@
   line-height: 1.5;
 }
 
-/* ─── Strategy Cloud ─── */
-
-.strategyCloud {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 32px;
-}
-
-.cloudLabel {
-  font-size: 12px;
-  color: var(--muted);
-  margin-right: 4px;
-}
-
-.strategyPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 12px;
-  color: var(--ink-secondary);
-  transition: all 150ms ease-out;
-}
-
-.strategyPill:hover {
-  border-color: var(--primary-20);
-  color: var(--ink);
-}
-
 /* ─── Actions ─── */
 
 .actions {

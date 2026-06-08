@@ -29,10 +29,13 @@ function App() {
   }, [theme])
 
   useEffect(() => {
-    if (!hasSeenWelcome && schema.children && schema.children.length > 0) {
-      dismissWelcome()
+    if (schema.children && schema.children.length > 0) {
+      const state = useProjectStore.getState()
+      if (!state.hasSeenWelcome) {
+        dismissWelcome()
+      }
     }
-  }, [hasSeenWelcome, schema, dismissWelcome])
+  }, [schema, dismissWelcome])
 
   const handleEditField = useCallback(() => setFieldModalOpen(true), [])
   const handleCloseFieldModal = useCallback(() => setFieldModalOpen(false), [])

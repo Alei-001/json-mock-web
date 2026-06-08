@@ -2,22 +2,11 @@ import { useTranslation } from 'react-i18next'
 import styles from './Welcome.module.css'
 import { useProjectStore } from '../../store/useProjectStore'
 import { MAX_GENERATE_COUNT } from '../../types'
+import { demoSchema, demoFieldConfigs } from '../../constants/demoSchema'
 
 interface WelcomeProps {
   onOpenTemplates: () => void
 }
-
-const strategies = [
-  { icon: '✉', labelKey: 'strategies.email' },
-  { icon: '👤', labelKey: 'strategies.name' },
-  { icon: '📞', labelKey: 'strategies.phone' },
-  { icon: '🔗', labelKey: 'strategies.uri' },
-  { icon: '🆔', labelKey: 'strategies.uuid' },
-  { icon: '📅', labelKey: 'strategies.datetime' },
-  { icon: '🔢', labelKey: 'strategies.integer' },
-  { icon: '💰', labelKey: 'strategies.price' },
-  { icon: '🏠', labelKey: 'strategies.city' },
-]
 
 export default function Welcome({ onOpenTemplates }: WelcomeProps) {
   const { t } = useTranslation()
@@ -26,6 +15,7 @@ export default function Welcome({ onOpenTemplates }: WelcomeProps) {
   const updateGenerationConfig = useProjectStore((s) => s.updateGenerationConfig)
 
   const handleTryDemo = () => {
+    useProjectStore.getState().loadSchema(demoSchema, demoFieldConfigs)
     updateGenerationConfig({ count: 5 > MAX_GENERATE_COUNT ? MAX_GENERATE_COUNT : 5 })
     generate()
     dismissWelcome()
@@ -48,7 +38,7 @@ export default function Welcome({ onOpenTemplates }: WelcomeProps) {
           </div>
           <h1 className={styles.title}>JSON Mock</h1>
           <p className={styles.subtitle}>
-            {t('welcome.tagline', 'Visual JSON Schema Editor & Realistic Mock Data Generator')}
+            {t('welcome.tagline')}
           </p>
         </div>
 
@@ -56,87 +46,74 @@ export default function Welcome({ onOpenTemplates }: WelcomeProps) {
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M3 9h18M9 21V9" />
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
               </svg>
             </div>
             <div className={styles.featureText}>
-              <h3>{t('welcome.featureVisualTitle', 'Visual Tree Editor')}</h3>
-              <p>{t('welcome.featureVisualDesc', 'Drag-and-drop tree view to design nested objects and arrays intuitively.')}</p>
+              <h3>{t('welcome.featureSyncTitle')}</h3>
+              <p>{t('welcome.featureSyncDesc')}</p>
             </div>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
-                <line x1="12" y1="22" x2="12" y2="15.5" />
-                <polyline points="22 8.5 12 15.5 2 8.5" />
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                <path d="M12 6v6l4 2" />
               </svg>
             </div>
             <div className={styles.featureText}>
-              <h3>{t('welcome.featureStrategiesTitle', '20+ Data Strategies')}</h3>
-              <p>{t('welcome.featureStrategiesDesc', 'Email, name, phone, UUID, address, price, and more — powered by Faker.js.')}</p>
+              <h3>{t('welcome.featureSeedTitle')}</h3>
+              <p>{t('welcome.featureSeedDesc')}</p>
             </div>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
+                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                <path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5" />
+                <path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3" />
               </svg>
             </div>
             <div className={styles.featureText}>
-              <h3>{t('welcome.featureExportTitle', 'Export JSON & CSV')}</h3>
-              <p>{t('welcome.featureExportDesc', 'Copy to clipboard or download as JSON. Export flat data as CSV for spreadsheet tools.')}</p>
+              <h3>{t('welcome.featureDataSourceTitle')}</h3>
+              <p>{t('welcome.featureDataSourceDesc')}</p>
             </div>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
             <div className={styles.featureText}>
-              <h3>{t('welcome.featureTemplatesTitle', 'Preset Templates')}</h3>
-              <p>{t('welcome.featureTemplatesDesc', 'Jump-start with User, Order, Product, Article, and Employee schemas.')}</p>
+              <h3>{t('welcome.featureOfflineTitle')}</h3>
+              <p>{t('welcome.featureOfflineDesc')}</p>
             </div>
           </div>
-        </div>
-
-        <div className={styles.strategyCloud}>
-          <span className={styles.cloudLabel}>{t('welcome.strategies', 'Built-in strategies:')}</span>
-          {strategies.map((s) => (
-            <span key={s.labelKey} className={styles.strategyPill}>
-              {s.icon} {t(s.labelKey)}
-            </span>
-          ))}
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.ctaPrimary} onClick={handleStartTemplate}>
+          <button className={styles.ctaPrimary} onClick={handleTryDemo}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            {t('welcome.tryDemo')}
+          </button>
+          <button className={styles.ctaSecondary} onClick={handleStartTemplate}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1" />
               <rect x="14" y="3" width="7" height="7" rx="1" />
               <rect x="3" y="14" width="7" height="7" rx="1" />
               <rect x="14" y="14" width="7" height="7" rx="1" />
             </svg>
-            {t('welcome.startTemplate', 'Start from Template')}
-          </button>
-          <button className={styles.ctaSecondary} onClick={handleTryDemo}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            {t('welcome.tryDemo', 'Try Demo Data')}
+            {t('welcome.startTemplate')}
           </button>
         </div>
 
         <button className={styles.dismiss} onClick={dismissWelcome}>
-          {t('welcome.skip', 'Skip to Editor')}
+          {t('welcome.skip')}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
