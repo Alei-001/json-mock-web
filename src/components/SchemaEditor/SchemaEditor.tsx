@@ -373,6 +373,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const autoPreview = useProjectStore((s) => s.autoPreview)
   const toggleAutoPreview = useProjectStore((s) => s.toggleAutoPreview)
   const prevAutoPreview = useRef(autoPreview)
+  const skipAutoGenerate = useRef(false)
 
   const handleCountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const v = Number(e.target.value)
@@ -438,6 +439,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   }, [schema, fieldConfigs, showToast, t])
 
   const handleClear = useCallback(() => {
+    skipAutoGenerate.current = true
     clearSchema()
     selectField(null)
     if (activeTab === 'text') {
@@ -458,6 +460,10 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   useEffect(() => {
     const justToggledOn = !prevAutoPreview.current && autoPreview
     prevAutoPreview.current = autoPreview
+    if (skipAutoGenerate.current) {
+      skipAutoGenerate.current = false
+      return
+    }
     if (autoPreview && !justToggledOn) {
       generate()
     }
