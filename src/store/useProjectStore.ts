@@ -229,6 +229,8 @@ export const useProjectStore = create<ProjectState>()(
       fieldConfigs: configs,
       selectedFieldId: null,
       generatedData: null,
+      dataSources: [],
+      bindings: {},
     })
   },
 
