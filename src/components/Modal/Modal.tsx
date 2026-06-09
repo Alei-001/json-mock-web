@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './Modal.module.css'
 
@@ -12,6 +13,14 @@ interface ModalProps {
 
 export default function Modal({ open, title, subtitle, children, footer, onClose }: ModalProps) {
   const { t } = useTranslation()
+
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = prev }
+    }
+  }, [open])
   return (
     <>
       <div className={`${styles.modalBackdrop} ${open ? styles.open : ''}`} onClick={onClose} />
