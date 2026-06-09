@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/screenshots/logo.png" alt="JSON Mock" width="120" />
-</p>
-
 <h1 align="center">JSON Mock</h1>
 
 <p align="center">
@@ -16,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/overview.png" alt="JSON Mock 概览" width="800" />
+  <img src="docs/screenshots/overview.jpeg" alt="JSON Mock 概览" width="800" />
 </p>
 
 ---
@@ -51,9 +47,6 @@
 | Français | Jean Dupont, Paris, 06 12 34 56 78 |
 | Español | María García, Madrid, 612 345 678 |
 
-<p align="center">
-  <img src="docs/screenshots/locale.png" alt="多语言选择" width="400" />
-</p>
 
 ---
 
@@ -65,9 +58,6 @@
 - **文本模式**：带语法高亮和行号的代码编辑器，支持直接编写 JSON Schema
 - **双向同步**：任意一侧修改，另一侧立即更新，保留 `x-faker` 等自定义扩展
 
-<p align="center">
-  <img src="docs/screenshots/dual-editor.png" alt="双模式编辑器" width="800" />
-</p>
 
 ---
 
@@ -83,9 +73,6 @@
 | date | 最近日期、未来日期、过去日期、生日、随机日期 |
 | array | 嵌套对象数组 |
 
-<p align="center">
-  <img src="docs/screenshots/generation-strategy.png" alt="生成策略选择" width="600" />
-</p>
 
 ---
 
@@ -109,9 +96,6 @@
    email → 外部数据源(email列)
 ```
 
-<p align="center">
-  <img src="docs/screenshots/data-source.png" alt="数据源管理" width="600" />
-</p>
 
 ---
 
@@ -127,7 +111,7 @@
 - **数组约束**：最小/最大元素个数
 
 <p align="center">
-  <img src="docs/screenshots/field-config.png" alt="字段配置面板" width="500" />
+  <img src="docs/screenshots/field-config.jpeg" alt="字段配置面板" width="500" />
 </p>
 
 ---
@@ -140,9 +124,6 @@
 - **表格视图**：自动展开嵌套对象，清晰展示数据
 - 实时显示数据条数和文件大小（KB）
 
-<p align="center">
-  <img src="docs/screenshots/data-preview.png" alt="数据预览" width="800" />
-</p>
 
 ---
 
@@ -158,9 +139,6 @@
 | 文章 | id, title, author, content, tags, publishDate, viewCount |
 | 员工 | id, name, department, position, salary, joinDate, email |
 
-<p align="center">
-  <img src="docs/screenshots/template-library.png" alt="模板库" width="500" />
-</p>
 
 ---
 
@@ -184,9 +162,6 @@
 - **国际化**：界面支持 中文/日本語/한국어 三种语言
 - **无障碍**：键盘导航、`prefers-reduced-motion` 适配、WCAG 2.1 AA 色比
 
-<p align="center">
-  <img src="docs/screenshots/i18n.png" alt="多语言界面" width="700" />
-</p>
 
 ---
 
