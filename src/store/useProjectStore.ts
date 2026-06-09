@@ -26,6 +26,19 @@ export function findNode(root: SchemaField, id: string): SchemaField | null {
   return null
 }
 
+function collectDescendantIds(field: SchemaField): string[] {
+  const ids: string[] = []
+  if (field.children) {
+    for (const child of field.children) {
+      ids.push(child.id, ...collectDescendantIds(child))
+    }
+  }
+  if (field.items) {
+    ids.push(field.items.id, ...collectDescendantIds(field.items))
+  }
+  return ids
+}
+
 function findParent(root: SchemaField, id: string): SchemaField | null {
   if (!root.children && !root.items) return null
   if (root.children) {
@@ -165,18 +178,34 @@ export const useProjectStore = create<ProjectState>()(
       const parent = findParent(schema, id)
       if (!parent) return {}
 
+      const removeIds = new Set([id])
+      let removedField: SchemaField | undefined
+
       if (parent.type === 'array' && parent.items?.id === id) {
+        removedField = parent.items
         parent.items = undefined
       } else if (parent.children) {
+        removedField = parent.children.find((c) => c.id === id)
         parent.children = parent.children.filter((c) => c.id !== id)
       }
 
+      if (removedField) {
+        for (const cid of collectDescendantIds(removedField)) {
+          removeIds.add(cid)
+        }
+      }
+
       const newConfigs = { ...state.fieldConfigs }
-      delete newConfigs[id]
+      const newBindings = { ...state.bindings }
+      for (const rid of removeIds) {
+        delete newConfigs[rid]
+        delete newBindings[rid]
+      }
 
       return {
         schema,
         fieldConfigs: newConfigs,
+        bindings: newBindings,
         selectedFieldId: state.selectedFieldId === id ? null : state.selectedFieldId,
       }
     })
@@ -223,6 +252,7 @@ export const useProjectStore = create<ProjectState>()(
       fieldConfigs: {},
       selectedFieldId: null,
       generatedData: null,
+      bindings: {},
       currentTemplateId: null,
     })
   },
