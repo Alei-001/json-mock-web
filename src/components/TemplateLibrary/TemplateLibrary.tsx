@@ -1,9 +1,22 @@
-import { useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './TemplateLibrary.module.css'
+import PromptDialog from '../PromptDialog/PromptDialog'
 import { useProjectStore } from '../../store/useProjectStore'
 import { PRESET_TEMPLATES } from '../../constants/templates'
 import type { PresetTemplate } from '../../constants/templates'
+
+function countFields(schema: PresetTemplate['schema']): number {
+  let count = 0
+  if (schema.children) {
+    for (const child of schema.children) {
+      count += 1
+      if (child.children) count += child.children.length
+      if (child.items) count += 1
+    }
+  }
+  return count
+}
 
 const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
   user: (
@@ -49,6 +62,12 @@ const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
       <line x1="9" y1="15" x2="15" y2="15" />
     </svg>
   ),
+  edit: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  ),
 }
 
 interface TemplateLibraryProps {
@@ -60,10 +79,13 @@ export default function TemplateLibrary({ onSelect }: TemplateLibraryProps) {
   const loadSchema = useProjectStore((s) => s.loadSchema)
   const customTemplates = useProjectStore((s) => s.customTemplates)
   const removeCustomTemplate = useProjectStore((s) => s.removeCustomTemplate)
+  const renameCustomTemplate = useProjectStore((s) => s.renameCustomTemplate)
   const showToast = useProjectStore((s) => s.showToast)
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [renameTarget, setRenameTarget] = useState<{ id: string; name: string } | null>(null)
 
   const handleSelect = useCallback((template: PresetTemplate, isCustom: boolean) => {
-    loadSchema(template.schema, template.fieldConfigs)
+    loadSchema(template.schema, template.fieldConfigs, isCustom ? template.id : undefined)
     showToast(t('template.loaded', { name: isCustom ? template.name : t(template.name) }))
     onSelect()
   }, [loadSchema, onSelect, showToast, t])
@@ -73,6 +95,21 @@ export default function TemplateLibrary({ onSelect }: TemplateLibraryProps) {
     removeCustomTemplate(id)
     showToast(t('template.deleted', { name }))
   }, [removeCustomTemplate, showToast, t])
+
+  const handleRename = useCallback((e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation()
+    setRenameTarget({ id, name })
+    setRenameOpen(true)
+  }, [])
+
+  const handleRenameConfirm = useCallback((newName: string) => {
+    if (renameTarget) {
+      renameCustomTemplate(renameTarget.id, newName.trim())
+      showToast(t('template.renamed', { name: newName.trim() }))
+    }
+    setRenameOpen(false)
+    setRenameTarget(null)
+  }, [renameTarget, renameCustomTemplate, showToast, t])
 
   return (
     <div className={styles.container}>
@@ -121,22 +158,40 @@ export default function TemplateLibrary({ onSelect }: TemplateLibraryProps) {
                   </div>
                   <span className={styles.tmplName}>{tmpl.name}</span>
                 </div>
-                <div className={styles.tmplDesc}>{tmpl.description}</div>
-                <button
-                  className={styles.tmplDelete}
-                  onClick={(e) => handleDelete(e, tmpl.id, tmpl.name)}
-                  title={t('template.delete')}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+                <div className={styles.tmplDesc}>{countFields(tmpl.schema)} {t('template.fields')}</div>
+                <div className={styles.tmplActions}>
+                  <button
+                    className={styles.tmplEdit}
+                    onClick={(e) => handleRename(e, tmpl.id, tmpl.name)}
+                    title={t('template.rename')}
+                  >
+                    {TEMPLATE_ICONS.edit}
+                  </button>
+                  <button
+                    className={styles.tmplDelete}
+                    onClick={(e) => handleDelete(e, tmpl.id, tmpl.name)}
+                    title={t('template.delete')}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
+      <PromptDialog
+        key={renameOpen ? 'rename-open' : 'rename-closed'}
+        open={renameOpen}
+        title={t('template.renameTitle')}
+        label={t('template.renameLabel')}
+        defaultValue={renameTarget?.name ?? ''}
+        onConfirm={handleRenameConfirm}
+        onClose={() => { setRenameOpen(false); setRenameTarget(null) }}
+      />
     </div>
   )
 }

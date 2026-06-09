@@ -116,15 +116,48 @@
   opacity: 0;
 }
 
+.tmpl-actions {
+  display: flex;
+  gap: 2px;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.tmpl-card:hover .tmpl-actions .tmpl-edit,
+.tmpl-card:hover .tmpl-actions .tmpl-delete {
+  opacity: 1;
+}
+
+.tmpl-edit,
+.tmpl-delete {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0;
+  transition: all 150ms ease-out;
+  opacity: 0;
+}
+
+.tmpl-edit:hover,
+.tmpl-delete:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
 .tmpl-delete:hover {
   background: var(--error);
   color: white;
 }
 
-.tmpl-card:hover .tmpl-delete {
-  opacity: 1;
-}
-
+.tmpl-edit svg,
 .tmpl-delete svg {
   width: 14px;
   height: 14px;

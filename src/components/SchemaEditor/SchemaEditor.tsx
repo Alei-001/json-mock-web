@@ -370,6 +370,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   const bindings = useProjectStore((s) => s.bindings)
   const dataSources = useProjectStore((s) => s.dataSources)
   const addCustomTemplate = useProjectStore((s) => s.addCustomTemplate)
+  const currentTemplateId = useProjectStore((s) => s.currentTemplateId)
   const autoPreview = useProjectStore((s) => s.autoPreview)
   const toggleAutoPreview = useProjectStore((s) => s.toggleAutoPreview)
   const prevAutoPreview = useRef(autoPreview)
@@ -420,9 +421,16 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
   }, [])
 
   const handleSaveTemplateConfirm = useCallback((name: string) => {
+    const store = useProjectStore.getState()
+    const existing = currentTemplateId
+      ? store.customTemplates.find((t) => t.id === currentTemplateId)
+      : undefined
+    const templateId = existing && existing.name === name.trim()
+      ? existing.id
+      : `custom-${Date.now()}`
     const template: PresetTemplate = {
-      id: `custom-${Date.now()}`,
-      name,
+      id: templateId,
+      name: name.trim(),
       description: '',
       schema: JSON.parse(JSON.stringify(schema)),
       fieldConfigs: JSON.parse(JSON.stringify(fieldConfigs)),
@@ -430,7 +438,7 @@ export default function SchemaEditor({ onEditField }: SchemaEditorProps) {
     addCustomTemplate(template)
     showToast(t('schemaEditor.templateSaved'))
     setSaveTemplateOpen(false)
-  }, [schema, fieldConfigs, addCustomTemplate, showToast, t])
+  }, [schema, fieldConfigs, currentTemplateId, addCustomTemplate, showToast, t])
 
   const handleExportConfirm = useCallback((filename: string) => {
     const jsonSchema = schemaFieldToJsonSchema(schema, fieldConfigs)

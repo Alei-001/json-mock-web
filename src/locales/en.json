@@ -90,7 +90,10 @@
     "parseFailed": "Parse failed",
     "deleted": "Data source deleted",
     "delete": "Delete data source",
-    "value": "Value"
+    "value": "Value",
+    "overwriteTitle": "Overwrite Confirmation",
+    "overwriteMessage": "A data source named \"{{name}}\" already exists. Overwrite?",
+    "overwriteConfirm": "Overwrite"
   },
   "template": {
     "title": "Template Library",
@@ -98,7 +101,12 @@
     "loaded": "Loaded \"{{name}}\" template",
     "customTitle": "Custom Templates",
     "delete": "Delete",
-    "deleted": "Template deleted"
+    "deleted": "Template deleted",
+    "renameTitle": "Rename Template",
+    "renameLabel": "New Name",
+    "renamed": "Renamed \"{{name}}\"",
+    "rename": "Rename",
+    "fields": "fields"
   },
   "dataPreview": {
     "copied": "Copied to clipboard",

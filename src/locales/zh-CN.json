@@ -90,7 +90,10 @@
     "parseFailed": "解析失败",
     "deleted": "已删除数据源",
     "delete": "删除数据源",
-    "value": "值"
+    "value": "值",
+    "overwriteTitle": "覆盖确认",
+    "overwriteMessage": "已有同名数据源「{{name}}」，是否覆盖？",
+    "overwriteConfirm": "覆盖"
   },
   "template": {
     "title": "模板库",
@@ -98,7 +101,12 @@
     "loaded": "已加载「{{name}}」模板",
     "customTitle": "自定义模板",
     "delete": "删除",
-    "deleted": "已删除"
+    "deleted": "已删除",
+    "renameTitle": "重命名模板",
+    "renameLabel": "新名称",
+    "renamed": "已重命名「{{name}}」",
+    "rename": "重命名",
+    "fields": "个字段"
   },
   "dataPreview": {
     "copied": "已复制到剪贴板",

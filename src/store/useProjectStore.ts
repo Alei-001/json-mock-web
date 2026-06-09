@@ -73,6 +73,7 @@ interface ProjectState {
   toastMessage: string | null
   customTemplates: PresetTemplate[]
   autoPreview: boolean
+  currentTemplateId: string | null
 
   dismissWelcome: () => void
   resetWelcome: () => void
@@ -87,7 +88,7 @@ interface ProjectState {
   updateGenerationConfig: (config: Partial<GenerationConfig>) => void
   generate: () => void
   clearSchema: () => void
-  loadSchema: (schema: SchemaField, configs: Record<string, FieldConfig>) => void
+  loadSchema: (schema: SchemaField, configs: Record<string, FieldConfig>, templateId?: string) => void
   importJsonSchema: (json: string) => boolean
   addDataSource: (ds: DataSource) => void
   removeDataSource: (id: string) => void
@@ -95,6 +96,7 @@ interface ProjectState {
   unbindField: (fieldId: string) => void
   addCustomTemplate: (template: PresetTemplate) => void
   removeCustomTemplate: (id: string) => void
+  renameCustomTemplate: (id: string, name: string) => void
   showToast: (message: string) => void
   toggleAutoPreview: () => void
 }
@@ -114,6 +116,7 @@ export const useProjectStore = create<ProjectState>()(
       toastMessage: null,
       customTemplates: [],
       autoPreview: false,
+      currentTemplateId: null,
 
   selectField: (id) => {
     set({ selectedFieldId: id })
@@ -220,10 +223,11 @@ export const useProjectStore = create<ProjectState>()(
       fieldConfigs: {},
       selectedFieldId: null,
       generatedData: null,
+      currentTemplateId: null,
     })
   },
 
-  loadSchema: (schema, configs) => {
+  loadSchema: (schema, configs, templateId) => {
     set({
       schema,
       fieldConfigs: configs,
@@ -231,6 +235,7 @@ export const useProjectStore = create<ProjectState>()(
       generatedData: null,
       dataSources: [],
       bindings: {},
+      currentTemplateId: templateId ?? null,
     })
   },
 
@@ -295,19 +300,28 @@ export const useProjectStore = create<ProjectState>()(
 
   addCustomTemplate: (template) => {
     set((state) => {
-      const idx = state.customTemplates.findIndex((t) => t.name === template.name)
+      const idx = state.customTemplates.findIndex((t) => t.id === template.id)
       if (idx >= 0) {
         const updated = [...state.customTemplates]
         updated[idx] = template
-        return { customTemplates: updated }
+        return { customTemplates: updated, currentTemplateId: template.id }
       }
-      return { customTemplates: [...state.customTemplates, template] }
+      return { customTemplates: [...state.customTemplates, template], currentTemplateId: template.id }
     })
   },
 
   removeCustomTemplate: (id) => {
     set((state) => ({
       customTemplates: state.customTemplates.filter((t) => t.id !== id),
+      currentTemplateId: state.currentTemplateId === id ? null : state.currentTemplateId,
+    }))
+  },
+
+  renameCustomTemplate: (id, name) => {
+    set((state) => ({
+      customTemplates: state.customTemplates.map((t) =>
+        t.id === id ? { ...t, name } : t,
+      ),
     }))
   },
 

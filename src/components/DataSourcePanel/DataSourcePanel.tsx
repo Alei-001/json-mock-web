@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Papa from 'papaparse'
 import styles from './DataSourcePanel.module.css'
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import { useProjectStore } from '../../store/useProjectStore'
 import type { DataSource } from '../../types'
 
@@ -32,6 +33,7 @@ export default function DataSourcePanel() {
   const { t } = useTranslation()
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pendingDs, setPendingDs] = useState<DataSource | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,8 +59,12 @@ export default function DataSourcePanel() {
           data,
           createdAt: new Date().toISOString(),
         }
+        if (existing) {
+          setPendingDs(ds)
+          return
+        }
         addDataSource(ds)
-        showToast(existing ? `${t('dataSource.updated')} ${ds.name}` : `${t('dataSource.imported')} ${ds.name}`)
+        showToast(`${t('dataSource.imported')} ${ds.name}`)
       } catch (err) {
         setError(`${t('dataSource.parseFailed')}: ${err instanceof Error ? err.message : String(err)}`)
       }
@@ -179,6 +185,20 @@ export default function DataSourcePanel() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        open={!!pendingDs}
+        title={t('dataSource.overwriteTitle')}
+        message={t('dataSource.overwriteMessage', { name: pendingDs?.name ?? '' })}
+        confirmLabel={t('dataSource.overwriteConfirm')}
+        onConfirm={() => {
+          if (pendingDs) {
+            addDataSource(pendingDs)
+            showToast(`${t('dataSource.updated')} ${pendingDs.name}`)
+          }
+          setPendingDs(null)
+        }}
+        onClose={() => setPendingDs(null)}
+      />
     </div>
   )
 }
